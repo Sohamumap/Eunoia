@@ -74,6 +74,10 @@ class VoteRequest(BaseModel):
     post_id: str
     vote_type: str  # "upvote" | "downvote" | "unvote"
 
+class ResonanceRequest(BaseModel):
+    post_id: str
+    resonance_type: Optional[str] = None  # "feel_this" | "been_there" | "not_alone" | None (to remove)
+
 class MessageCreate(BaseModel):
     recipient_id: str
     subject: str
@@ -768,6 +772,61 @@ async def vote_on_post(req: VoteRequest, request: Request):
     
     vote_count = await get_post_vote_count(req.post_id)
     return {"success": True, "vote_type": req.vote_type, "vote_count": vote_count}
+
+@api_router.post("/resonate")
+async def resonate_with_post(req: ResonanceRequest, request: Request):
+    """Add resonance reaction to a post (feel_this, been_there, not_alone)"""
+    user = await get_current_user(request)
+    
+    # Check if post exists
+    post = await db.reflections.find_one({"id": req.post_id}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Find existing resonance
+    existing = await db.resonances.find_one({"post_id": req.post_id, "user_id": user["id"]})
+    
+    if req.resonance_type is None:
+        # Remove resonance
+        if existing:
+            await db.resonances.delete_one({"post_id": req.post_id, "user_id": user["id"]})
+        
+        # Get updated counts
+        resonances = await db.resonances.find({"post_id": req.post_id}, {"_id": 0, "resonance_type": 1}).to_list(1000)
+        counts = {
+            "feel_this": sum(1 for r in resonances if r["resonance_type"] == "feel_this"),
+            "been_there": sum(1 for r in resonances if r["resonance_type"] == "been_there"),
+            "not_alone": sum(1 for r in resonances if r["resonance_type"] == "not_alone")
+        }
+        return {"success": True, "user_resonance": None, "resonances": counts}
+    
+    # Add or update resonance
+    resonance_id = existing["id"] if existing else str(uuid.uuid4())
+    resonance_doc = {
+        "id": resonance_id,
+        "post_id": req.post_id,
+        "user_id": user["id"],
+        "resonance_type": req.resonance_type,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if existing:
+        await db.resonances.update_one(
+            {"id": resonance_id},
+            {"$set": resonance_doc}
+        )
+    else:
+        await db.resonances.insert_one({**resonance_doc, "_id": resonance_id})
+    
+    # Get updated counts
+    resonances = await db.resonances.find({"post_id": req.post_id}, {"_id": 0, "resonance_type": 1}).to_list(1000)
+    counts = {
+        "feel_this": sum(1 for r in resonances if r["resonance_type"] == "feel_this"),
+        "been_there": sum(1 for r in resonances if r["resonance_type"] == "been_there"),
+        "not_alone": sum(1 for r in resonances if r["resonance_type"] == "not_alone")
+    }
+    
+    return {"success": True, "user_resonance": req.resonance_type, "resonances": counts}
 
 # ============================================================
 # USER PROFILE & KARMA

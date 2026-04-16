@@ -2,79 +2,115 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import CrisisModal from '@/components/CrisisModal';
-import CommentThread from '@/components/Comment';
-import SortTabs from '@/components/SortTabs';
-import { ArrowLeft, Send, AlertTriangle, Check, X, Users } from 'lucide-react';
+import GlassCard from '@/components/GlassCard';
+import IdentityEmblem from '@/components/IdentityEmblem';
+import ResonanceButtons from '@/components/ResonanceButtons';
+import { ArrowLeft, Send, Mic, Check, AlertTriangle, X } from 'lucide-react';
 
-function AboutCircleSidebar({ forum, isJoined, onJoinToggle }) {
+const formatTimeAgo = (dateString) => {
+  const now = new Date();
+  const posted = new Date(dateString);
+  const diffMs = now - posted;
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffHours < 1) return 'just now';
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return posted.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
+function PostItem({ post, onResonate }) {
+  const [resonances, setResonances] = useState(post.resonances || {});
+  const [userResonance, setUserResonance] = useState(post.user_resonance || null);
+
+  const handleResonate = async (postId, type) => {
+    // Optimistic update
+    setUserResonance(type);
+    if (type) {
+      setResonances(prev => ({
+        ...prev,
+        [type]: (prev[type] || 0) + (userResonance === type ? -1 : userResonance ? 0 : 1)
+      }));
+    }
+    
+    await onResonate(postId, type);
+  };
+
   return (
-    <div className="bg-white border border-gray-200 rounded-md overflow-hidden">
-      {/* Header */}
-      <div className="bg-blue-600 px-4 py-3">
-        <h3 className="font-sans text-sm font-bold text-white">About Community</h3>
-      </div>
-
-      {/* Content */}
-      <div className="p-4">
-        <h4 className="font-sans text-sm font-bold text-gray-900 mb-2">
-          c/{forum.name}
-        </h4>
-        <p className="font-sans text-xs text-gray-700 leading-relaxed mb-4">
-          {forum.description}
-        </p>
-
-        {/* Stats */}
-        <div className="flex items-center gap-4 mb-4 pb-4 border-b border-gray-200">
-          <div>
-            <div className="font-sans text-sm font-bold text-gray-900">
-              {forum.member_count || 0}
-            </div>
-            <div className="font-sans text-xs text-gray-600">Members</div>
+    <GlassCard className="p-6 mb-4">
+      {/* Post Header */}
+      <div className="flex items-start gap-3 mb-4">
+        <IdentityEmblem userId={post.user_id} size="md" />
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-white font-medium">{post.display_name || 'Anonymous'}</span>
+            <span className="text-gray-500 text-sm">·</span>
+            <span className="text-gray-400 text-sm">{formatTimeAgo(post.created_at)}</span>
           </div>
-          <div>
-            <div className="font-sans text-sm font-bold text-gray-900">
-              {forum.post_count || 0}
-            </div>
-            <div className="font-sans text-xs text-gray-600">Posts</div>
-          </div>
-        </div>
-
-        {/* Join Button */}
-        <button
-          onClick={onJoinToggle}
-          className={`w-full py-2 rounded-full font-sans text-sm font-bold transition-colors ${
-            isJoined
-              ? 'bg-gray-200 text-gray-900 hover:bg-gray-300'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
-        >
-          {isJoined ? 'Joined' : 'Join'}
-        </button>
-
-        {/* Rules */}
-        {forum.tags && forum.tags.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="font-sans text-xs font-bold text-gray-900 mb-2">Topics</div>
-            <div className="flex flex-wrap gap-1.5">
-              {forum.tags.map(tag => (
-                <span
-                  key={tag}
-                  className="px-2 py-1 text-[10px] font-sans font-medium bg-gray-100 text-gray-700 rounded-full"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <p className="font-sans text-[10px] text-gray-500 leading-relaxed">
-            All posts are moderated before publishing. No medication advice or diagnostic language allowed.
-          </p>
+          {post.role && (
+            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-green-500/20 text-green-300 border border-green-500/30">
+              {post.role}
+            </span>
+          )}
         </div>
       </div>
-    </div>
+
+      {/* Post Body */}
+      <p className="text-gray-200 leading-relaxed mb-4 whitespace-pre-wrap">
+        {post.body}
+      </p>
+
+      {/* Moderation Status */}
+      {post.moderation_status === 'approved' && (
+        <div className="flex items-center gap-2 text-xs text-green-400 mb-4">
+          <Check size={14} />
+          <span>This reflection has been reviewed for community safety</span>
+        </div>
+      )}
+
+      {post.moderation_status === 'rewritten' && (
+        <div className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 mb-4">
+          This reflection was gently edited for community safety.
+        </div>
+      )}
+
+      {/* Resonance Buttons */}
+      <ResonanceButtons
+        postId={post.id}
+        resonances={{
+          ...resonances,
+          reply_count: post.replies?.length || 0
+        }}
+        userResonance={userResonance}
+        onResonate={handleResonate}
+      />
+
+      {/* Replies */}
+      {post.replies && post.replies.length > 0 && (
+        <div className="mt-6 space-y-4 pl-6 border-l-2 border-white/10">
+          {post.replies.map(reply => (
+            <div key={reply.id} className="flex items-start gap-3">
+              <IdentityEmblem userId={reply.user_id} size="sm" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-white text-sm font-medium">
+                    {reply.display_name || 'Anonymous'}
+                  </span>
+                  <span className="text-gray-500 text-xs">·</span>
+                  <span className="text-gray-400 text-xs">
+                    {formatTimeAgo(reply.created_at)}
+                  </span>
+                </div>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  {reply.body}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </GlassCard>
   );
 }
 
@@ -88,22 +124,19 @@ export default function CircleThread() {
   const [modResult, setModResult] = useState(null);
   const [posting, setPosting] = useState(false);
   const [showCrisis, setShowCrisis] = useState(false);
-  const [sort, setSort] = useState('hot');
-  const [isJoined, setIsJoined] = useState(false);
   const modTimeout = useRef(null);
 
   const fetchForum = useCallback(async () => {
     try {
-      const { data } = await api('get', `/forums/${id}?sort=${sort}`);
+      const { data } = await api('get', `/forums/${id}`);
       setForum(data.forum);
       setPosts(data.posts);
-      setIsJoined(data.is_joined);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [api, id, sort]);
+  }, [api, id]);
 
   useEffect(() => { fetchForum(); }, [fetchForum]);
 
@@ -124,11 +157,7 @@ export default function CircleThread() {
   };
 
   const handlePost = async () => {
-    if (!text.trim()) return;
-    if (modResult?.status === 'paused_crisis') {
-      setShowCrisis(true);
-      return;
-    }
+    if (!text.trim() || modResult?.status === 'paused_crisis' || modResult?.status === 'blocked') return;
     setPosting(true);
     try {
       const { data } = await api('post', `/forums/${id}/posts`, { body: text, is_private: false });
@@ -136,10 +165,8 @@ export default function CircleThread() {
         await fetchForum();
         setText('');
         setModResult(null);
-      } else if (data.moderation?.status === 'paused_crisis' || data.crisis_blocked) {
+      } else if (data.moderation?.status === 'paused_crisis') {
         setShowCrisis(true);
-        setText('');
-        setModResult(null);
       }
     } catch (err) {
       console.error(err);
@@ -148,240 +175,110 @@ export default function CircleThread() {
     }
   };
 
-  const handleUseSuggestion = () => {
-    if (modResult?.suggestion) {
-      setText(modResult.suggestion);
-      setModResult(null);
-    }
-  };
-
-  const handleVote = async (postId, voteType) => {
+  const handleResonate = async (postId, resonanceType) => {
     try {
-      const { data } = await api('post', '/vote', { post_id: postId, vote_type: voteType });
-      
-      setPosts(prevPosts =>
-        prevPosts.map(post => {
-          if (post.id === postId) {
-            return { ...post, vote_count: data.vote_count, user_vote: data.vote_type };
-          }
-          // Update nested replies
-          if (post.replies) {
-            return {
-              ...post,
-              replies: post.replies.map(reply =>
-                reply.id === postId
-                  ? { ...reply, vote_count: data.vote_count, user_vote: data.vote_type }
-                  : reply
-              )
-            };
-          }
-          return post;
-        })
-      );
+      await api('post', '/resonate', { post_id: postId, resonance_type: resonanceType });
     } catch (err) {
-      console.error('Error voting:', err);
+      console.error('Error resonating:', err);
     }
-  };
-
-  const handleReply = async (postId, replyText) => {
-    try {
-      const { data } = await api('post', `/forums/${id}/posts`, {
-        body: replyText,
-        is_private: false,
-        parent_id: postId
-      });
-      if (data.posted) {
-        await fetchForum();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleJoinToggle = async () => {
-    try {
-      if (isJoined) {
-        await api('post', `/forums/${id}/leave`);
-        setIsJoined(false);
-      } else {
-        await api('post', `/forums/${id}/join`);
-        setIsJoined(true);
-      }
-    } catch (err) {
-      console.error('Error toggling join:', err);
-    }
-  };
-
-  const renderHighlightedText = () => {
-    if (!modResult?.highlights?.length) return null;
-    let result = [];
-    let lastIdx = 0;
-    const sorted = [...modResult.highlights].sort((a, b) => a.start - b.start);
-    sorted.forEach((h, i) => {
-      if (h.start > lastIdx) result.push(<span key={`t-${i}`}>{text.slice(lastIdx, h.start)}</span>);
-      const color = h.type === 'crisis' ? 'bg-red-100 text-red-700' : h.type === 'medication' ? 'bg-orange-100 text-orange-700' : 'bg-yellow-100 text-yellow-700';
-      result.push(<mark key={`h-${i}`} className={`${color} rounded px-0.5`}>{text.slice(h.start, h.end)}</mark>);
-      lastIdx = h.end;
-    });
-    if (lastIdx < text.length) result.push(<span key="end">{text.slice(lastIdx)}</span>);
-    return <div className="font-sans text-sm p-3 rounded border border-gray-300 bg-gray-50 whitespace-pre-wrap leading-relaxed">{result}</div>;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center pt-16">
-        <p className="font-sans text-gray-600">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2C1810 0%, #1a1410 100%)' }}>
+        <p className="text-gray-400">Loading...</p>
       </div>
     );
   }
 
   if (!forum) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center pt-16">
-        <p className="font-sans text-gray-600">Circle not found</p>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2C1810 0%, #1a1410 100%)' }}>
+        <p className="text-gray-400">Circle not found</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 pb-16" data-testid="circle-thread-page">
-      <div className="max-w-6xl mx-auto px-4">
+    <div 
+      className="min-h-screen pt-20 pb-24 px-4"
+      style={{
+        background: 'linear-gradient(135deg, #2C1810 0%, #1a1410 100%)',
+        backgroundImage: `
+          linear-gradient(135deg, rgba(44, 24, 16, 0.95) 0%, rgba(26, 20, 16, 0.95) 100%),
+          url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
+        `
+      }}
+    >
+      <div className="max-w-3xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <Link
-            to="/circles"
-            className="inline-flex items-center gap-1.5 text-gray-600 font-sans text-sm hover:text-gray-900 mb-3 no-underline"
-          >
-            <ArrowLeft size={15} /> Back to Feed
+        <div className="mb-8">
+          <Link to="/circles" className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-200 mb-4 transition-colors">
+            <ArrowLeft size={16} />
+            <span className="text-sm">Back to Circles</span>
           </Link>
-          <h1 className="font-sans text-2xl font-bold text-gray-900 mb-1">c/{forum.name}</h1>
-          <p className="font-sans text-sm text-gray-600">{forum.description}</p>
+          
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-serif text-white mb-2">{forum.name}</h1>
+              {forum.tags && forum.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {forum.tags.map(tag => (
+                    <span key={tag} className="px-3 py-1 rounded-full text-xs bg-black/30 text-gray-300 border border-white/10">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="text-gray-400 text-sm">
+              {forum.member_count || 0} members
+            </div>
+          </div>
         </div>
 
-        <div className="flex gap-6">
-          {/* Main Content */}
-          <div className="flex-1 space-y-4">
-            {/* Compose Post */}
-            <div className="bg-white border border-gray-200 rounded-md p-4">
-              <textarea
-                value={text}
-                onChange={handleTextChange}
-                placeholder="What are your thoughts?"
-                data-testid="compose-textarea"
-                className="w-full h-24 p-3 rounded border border-gray-300 bg-white font-sans text-sm text-gray-900 resize-none focus:outline-none focus:border-blue-500 placeholder:text-gray-500"
-              />
-
-              {/* Moderation Preview */}
-              {modResult && modResult.status !== 'approved' && (
-                <div className="mt-3" data-testid="moderation-preview">
-                  {modResult.highlights?.length > 0 && renderHighlightedText()}
-
-                  {modResult.status === 'paused_crisis' && (
-                    <div className="mt-3 p-3 rounded bg-red-50 border border-red-200">
-                      <p className="font-sans text-sm text-red-700 font-medium flex items-center gap-1.5 mb-2">
-                        <AlertTriangle size={15} /> We are concerned about what you have written.
-                      </p>
-                      <p className="font-sans text-xs text-gray-700 leading-relaxed mb-2">
-                        It sounds like you may be going through something serious. This post cannot be shared, but we want to make sure you are safe.
-                      </p>
-                      <button
-                        onClick={() => setShowCrisis(true)}
-                        data-testid="crisis-trigger-btn"
-                        className="px-4 py-2 rounded-full bg-red-600 text-white font-sans text-xs font-medium hover:bg-red-700"
-                      >
-                        Get Help Now
-                      </button>
-                    </div>
-                  )}
-
-                  {modResult.status === 'needs_rewrite' && modResult.suggestion && (
-                    <div className="mt-3 p-3 rounded bg-orange-50 border border-orange-200">
-                      <p className="font-sans text-xs text-orange-700 font-medium mb-2 flex items-center gap-1.5">
-                        <AlertTriangle size={13} /> This sounds like a medication suggestion
-                      </p>
-                      <p className="font-sans text-xs text-gray-600 mb-2">
-                        We cannot share medication advice for everyone&apos;s safety. Would you like to post a first-person version?
-                      </p>
-                      <p className="font-sans text-sm italic text-gray-900 mb-2">&ldquo;{modResult.suggestion}&rdquo;</p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleUseSuggestion}
-                          data-testid="use-suggestion-btn"
-                          className="px-3 py-1.5 rounded-full bg-orange-600 text-white font-sans text-xs font-medium flex items-center gap-1"
-                        >
-                          <Check size={12} /> Use this
-                        </button>
-                        <button
-                          onClick={() => setModResult(null)}
-                          className="px-3 py-1.5 rounded-full border border-gray-300 text-gray-700 font-sans text-xs"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {modResult.status === 'blocked' && (
-                    <div className="mt-3 p-3 rounded bg-red-50 border border-red-200">
-                      <p className="font-sans text-xs text-red-700 font-medium flex items-center gap-1.5">
-                        <X size={13} /> This contains diagnostic language
-                      </p>
-                      <p className="font-sans text-xs text-gray-600 mt-1">
-                        On Eunoia, we avoid telling others what they have. Consider rephrasing as your personal experience.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="flex justify-end mt-3">
-                <button
-                  onClick={handlePost}
-                  disabled={posting || !text.trim() || modResult?.status === 'blocked'}
-                  data-testid="post-btn"
-                  className="px-5 py-2 rounded-full bg-blue-600 text-white font-sans text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-                >
-                  <Send size={14} /> Post
-                </button>
-              </div>
+        {/* Compose Box */}
+        <GlassCard className="p-6 mb-8">
+          <textarea
+            value={text}
+            onChange={handleTextChange}
+            placeholder={`Share a reflection in ${forum.name}...`}
+            className="w-full h-32 bg-transparent text-white placeholder-gray-500 resize-none focus:outline-none"
+          />
+          
+          {modResult && modResult.status !== 'approved' && (
+            <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <p className="text-amber-300 text-sm">{modResult.message || 'Please review your message'}</p>
             </div>
+          )}
 
-            {/* Sort Tabs */}
-            <div>
-              <SortTabs activeSort={sort} onSortChange={setSort} />
-            </div>
-
-            {/* Posts/Comments */}
-            <div className="space-y-4">
-              {posts.length === 0 && (
-                <div className="bg-white border border-gray-200 rounded-md p-12 text-center">
-                  <p className="font-sans text-gray-600 text-sm">
-                    No posts yet. Be the first to share.
-                  </p>
-                </div>
-              )}
-              {posts.map((post) => (
-                <div key={post.id} className="bg-white border border-gray-200 rounded-md p-4">
-                  <CommentThread
-                    comments={[post]}
-                    onVote={handleVote}
-                    onReply={handleReply}
-                  />
-                </div>
-              ))}
-            </div>
+          <div className="flex justify-between items-center mt-4">
+            <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
+              <Mic size={20} className="text-gray-400" />
+            </button>
+            <button
+              onClick={handlePost}
+              disabled={posting || !text.trim() || modResult?.status === 'blocked'}
+              className="px-6 py-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {posting ? 'Posting...' : 'Post anonymously'}
+            </button>
           </div>
+          <p className="text-xs text-gray-500 mt-2 text-center">
+            You appear as {user?.display_name}. Your identity is never revealed.
+          </p>
+        </GlassCard>
 
-          {/* Right Sidebar */}
-          <div className="hidden lg:block w-80 flex-shrink-0">
-            <div className="sticky top-24">
-              <AboutCircleSidebar
-                forum={forum}
-                isJoined={isJoined}
-                onJoinToggle={handleJoinToggle}
-              />
+        {/* Posts */}
+        <div>
+          {posts.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-gray-400">No posts yet. Be the first to share.</p>
             </div>
-          </div>
+          )}
+          {posts.map(post => (
+            <PostItem key={post.id} post={post} onResonate={handleResonate} />
+          ))}
         </div>
       </div>
 
