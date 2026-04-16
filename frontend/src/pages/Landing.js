@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ArrowDown, Heart, Wind, Activity, BookOpen, Shield, Users, Sparkles, Moon } from 'lucide-react';
+import Logo from '@/components/Logo';
 
 const testimonials = [
   { text: "I tried three different apps. They all felt like talking to a mirror. Eunoia felt like walking into a room of people who actually get it.", name: "Resident_3847", role: "Internal Medicine", tint: "peach" },
@@ -269,7 +270,7 @@ export default function Landing() {
       {/* Top nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-18">
-          <span className="font-serif text-2xl italic font-semibold" style={{ color: 'var(--accent)' }}>Eunoia</span>
+          <Logo to="/" size="lg" />
           <div className="flex items-center gap-6">
             <a href="#features" className="hidden md:inline font-sans text-base text-mid hover:text-charcoal transition-colors no-underline font-medium">Features</a>
             <a href="#how-it-works" className="hidden md:inline font-sans text-base text-mid hover:text-charcoal transition-colors no-underline font-medium">How it works</a>
@@ -287,7 +288,7 @@ export default function Landing() {
 
       {/* Hero — Split layout with strong visual + Diagonal emphasis */}
       <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-        {/* Prominent image right with diagonal mask */}
+        {/* Prominent image right with soft diagonal mask */}
         <div
           className="absolute top-0 right-0 w-full lg:w-[65%] h-full pointer-events-none"
           style={{
@@ -295,8 +296,8 @@ export default function Landing() {
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             opacity: 0.90,
-            maskImage: 'linear-gradient(135deg, transparent 0%, rgba(0,0,0,0.6) 35%, rgba(0,0,0,1) 60%)',
-            WebkitMaskImage: 'linear-gradient(135deg, transparent 0%, rgba(0,0,0,0.6) 35%, rgba(0,0,0,1) 60%)',
+            maskImage: 'linear-gradient(130deg, transparent 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0.7) 45%, rgba(0,0,0,1) 65%)',
+            WebkitMaskImage: 'linear-gradient(130deg, transparent 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0.7) 45%, rgba(0,0,0,1) 65%)',
           }}
         />
         {/* Dancer subtle on left bottom */}

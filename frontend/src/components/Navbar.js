@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import CrisisModal from '@/components/CrisisModal';
+import Logo from '@/components/Logo';
 import { Heart, Home as HomeIcon, BookOpen, Users, Compass, User, Settings, LogOut, Menu, X, Mail, Trophy } from 'lucide-react';
 
 export default function Navbar() {
@@ -48,10 +49,10 @@ export default function Navbar() {
       <nav className="fixed top-0 left-0 right-0 z-50 glass-nav" data-testid="navbar">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
-            <Link to={user ? '/home' : '/'} className="flex items-center gap-2 no-underline" data-testid="nav-logo">
-              <span className="font-serif text-2xl font-bold text-charcoal tracking-tight">Eunoia</span>
-              <span className="text-accent text-xs font-sans font-light hidden sm:inline tracking-wide" style={{ marginTop: '4px' }}>beautiful thinking</span>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Logo to={user ? '/home' : '/'} size="md" data-testid="nav-logo" />
+              <span className="text-accent text-xs font-sans font-medium hidden sm:inline tracking-wide" style={{ marginTop: '2px' }}>beautiful thinking</span>
+            </div>
 
             {user && (
               <div className="hidden md:flex items-center gap-1">

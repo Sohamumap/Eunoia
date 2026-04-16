@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import Logo from '@/components/Logo';
 import { ArrowRight, Mail, Globe, Briefcase } from 'lucide-react';
 
 const locales = [
@@ -65,10 +66,8 @@ export default function Signup() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12" data-testid="signup-page">
       <div className="w-full max-w-md">
-        <div className="text-center mb-10 animate-fade-up">
-          <Link to="/" className="no-underline">
-            <h1 className="font-serif text-4xl font-bold text-charcoal mb-2">Eunoia</h1>
-          </Link>
+        <div className="text-center mb-10 animate-fade-up flex flex-col items-center">
+          <Logo to="/" size="xl" className="mb-4" />
           <p className="font-sans text-mid text-sm">
             {mode === 'signup' ? 'Create your anonymous account' : 'Welcome back'}
           </p>
