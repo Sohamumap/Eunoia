@@ -561,6 +561,41 @@ async def create_forum_post(forum_id: str, req: ReflectionCreate, request: Reque
     post["replies"] = []
     return {"post": post, "moderation": mod_result, "posted": True}
 
+@api_router.get("/feed")
+async def get_social_feed():
+    """Unified social feed showing recent posts from all circles"""
+    # Fetch all approved posts from all forums
+    posts = await db.reflections.find(
+        {"parent_id": None, "moderation_status": {"$in": ["approved", "rewritten"]}},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    # Enrich each post with user display name and forum info
+    for post in posts:
+        # Get user display name
+        post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "display_name": 1})
+        if post_user:
+            post["display_name"] = post_user["display_name"]
+        else:
+            post["display_name"] = "Anonymous"
+        
+        # Get forum info
+        if post.get("forum_id"):
+            forum = await db.forums.find_one({"id": post["forum_id"]}, {"_id": 0, "name": 1, "tags": 1})
+            if forum:
+                post["forum_name"] = forum["name"]
+                post["forum_tags"] = forum.get("tags", [])
+        
+        # Count replies
+        reply_count = await db.reflections.count_documents({"parent_id": post["id"]})
+        post["reply_count"] = reply_count
+        
+        # Initialize engagement metrics (these would come from a separate collection in production)
+        post["like_count"] = 0  # Placeholder for future implementation
+        post["is_liked"] = False  # Placeholder
+    
+    return {"posts": posts}
+
 # ============================================================
 # REFLECTION / COMPANION ROUTES
 # ============================================================
