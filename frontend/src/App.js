@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import Navbar from '@/components/Navbar';
+import AtmosphericBg from '@/components/AtmosphericBg';
 import Landing from '@/pages/Landing';
 import Signup from '@/pages/Signup';
 import Onboarding from '@/pages/Onboarding';
@@ -21,6 +22,7 @@ function AppLayout() {
 
   return (
     <>
+      <AtmosphericBg />
       {!hideNav && <Navbar />}
       <Routes>
         <Route path="/" element={<Landing />} />
