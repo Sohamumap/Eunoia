@@ -1,20 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 /**
  * Eunoia Logo Component
- * - Uses animated MP4 video by default (looping)
- * - Falls back to static JPG if video fails to load or when `static` prop is true
+ * - Uses animated GIF logo by default
  * - Supports Link wrapper or plain display via `to` prop
  */
 export default function Logo({ 
   to, 
   className = '', 
   size = 'md',
-  static: forceStatic = false 
 }) {
-  const [videoError, setVideoError] = useState(false);
-  
   // Size presets
   const sizeMap = {
     xs: { height: '24px', width: 'auto' },
@@ -26,46 +22,17 @@ export default function Logo({
   
   const style = sizeMap[size] || sizeMap.md;
   
-  // Use static JPG if forced or if video fails
-  const useStatic = forceStatic || videoError;
-  
-  const logoElement = useStatic ? (
+  const logoElement = (
     <img 
-      src="/assets/logo/eunoia-logo.jpg" 
+      src="/assets/logo/eunoia-logo.gif" 
       alt="Eunoia"
       style={{
         ...style,
-        mixBlendMode: 'multiply', // Remove white background
-        filter: 'contrast(1.1) brightness(1.05)'
+        mixBlendMode: 'normal', // GIF should display normally
+        filter: 'none'
       }}
       className={`object-contain ${className}`}
     />
-  ) : (
-    <video
-      autoPlay
-      loop
-      muted
-      playsInline
-      onError={() => setVideoError(true)}
-      style={{
-        ...style,
-        mixBlendMode: 'multiply', // Remove white background
-        filter: 'contrast(1.1) brightness(1.05)'
-      }}
-      className={`object-contain ${className}`}
-      aria-label="Eunoia"
-    >
-      <source src="/assets/logo/eunoia-logo.mp4" type="video/mp4" />
-      {/* Fallback to static image */}
-      <img 
-        src="/assets/logo/eunoia-logo.jpg" 
-        alt="Eunoia"
-        style={{
-          ...style,
-          mixBlendMode: 'multiply'
-        }}
-      />
-    </video>
   );
   
   // If `to` prop is provided, wrap in Link
