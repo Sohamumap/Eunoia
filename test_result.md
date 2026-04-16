@@ -217,6 +217,26 @@ backend:
         comment: "✅ Demo user seeding verified working. Login with demo@eunoia.app successful, returns user with display_name='Resident_2580', role='resident', onboarded=true. Rich sample data confirmed: 6 assessments, 5 reflections, Wellness Profile with archetype 'The Over-Committed Healer', 40 days mood history with avg 3.02, streak=9. Seeding is idempotent and runs on startup."
 
 frontend:
+  - task: "SafetyReferralModal + Companion/CircleThread prescription-seeking guardrail UI"
+    implemented: true
+    working: true
+    file: "frontend/src/components/SafetyReferralModal.js, frontend/src/pages/Companion.js, frontend/src/pages/CircleThread.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Created SafetyReferralModal (stethoscope icon, warm rose tint, detected-snippet chip,
+          sage-tinted 'Why Eunoia won't answer this' explainer, two CTAs: Find a clinician / I understand).
+          Companion: debounced 600ms live /moderation/check call; inline amber banner + "Learn more" when
+          seeking_prescription; primary CTA flips from "Save reflection" (charcoal) to "See a physician"
+          (rose); on save, blocks persistence and opens the modal. CircleThread: mirror wiring — dedicated
+          prescription banner + "Learn more"; Post button flips to rose "See a physician"; on submit,
+          opens modal instead of posting. Crisis path unchanged in both pages. Visually verified in
+          Companion via Playwright: hint renders, modal opens, copy correct.
+
   - task: "Design system overhaul: soft-card component library, pastel tint variants, layered shadows, atmospheric backgrounds per route"
     implemented: true
     working: "NA"

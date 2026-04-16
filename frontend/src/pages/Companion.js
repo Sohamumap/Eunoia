@@ -170,25 +170,25 @@ export default function Companion() {
               <p className="font-sans text-sm text-mid">Write freely. Nobody reads this but you and Eunoia.</p>
             </div>
 
-            <div className="flex-1 animate-fade-up stagger-2">
+            <div className="flex-1 flex flex-col animate-fade-up stagger-2">
               <textarea
                 ref={textareaRef}
                 value={text}
                 onChange={handleTextChange}
                 placeholder="What is on your mind today? Write honestly. This is your private space."
                 data-testid="companion-textarea"
-                className="w-full h-full min-h-[300px] p-6 rounded-eunoia border border-eunoia-border bg-card-bg font-sans text-[15px] text-charcoal leading-relaxed resize-none focus:outline-none focus:border-accent/30 focus:shadow-eunoia transition-all placeholder:text-mid/30"
+                className="flex-1 min-h-[260px] p-6 rounded-eunoia border border-eunoia-border bg-card-bg font-sans text-[15px] text-charcoal leading-relaxed resize-none focus:outline-none focus:border-accent/30 focus:shadow-eunoia transition-all placeholder:text-mid/30"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               />
 
               {/* Inline safety hint for prescription-seeking — shows BEFORE save */}
               {liveMod?.status === 'seeking_prescription' && (
                 <div
-                  className="mt-3 flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/25 animate-fade-up"
+                  className="mt-3 flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/25 animate-fade-up flex-shrink-0"
                   data-testid="companion-prescription-hint"
                 >
                   <Stethoscope size={18} className="text-rose flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="font-sans text-sm font-medium text-charcoal mb-0.5">
                       For prescriptions, please consult a physician.
                     </p>
