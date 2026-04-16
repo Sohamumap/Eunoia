@@ -170,36 +170,73 @@ async def complete_onboarding(request: Request):
 # ============================================================
 # ASSESSMENT DATA
 # ============================================================
+PHQ9_OPTIONS = [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]
+GAD7_OPTIONS = PHQ9_OPTIONS
+PSS_OPTIONS = [{"value": 0, "label": "Never"}, {"value": 1, "label": "Almost never"}, {"value": 2, "label": "Sometimes"}, {"value": 3, "label": "Fairly often"}, {"value": 4, "label": "Very often"}]
+PSQI_FREQ = [{"value": 0, "label": "Not during the past month"}, {"value": 1, "label": "Less than once a week"}, {"value": 2, "label": "Once or twice a week"}, {"value": 3, "label": "Three or more times a week"}]
+MBI_OPTIONS = [{"value": 0, "label": "Never"}, {"value": 1, "label": "A few times a year"}, {"value": 2, "label": "Once a month"}, {"value": 3, "label": "A few times a month"}, {"value": 4, "label": "Once a week"}, {"value": 5, "label": "A few times a week"}, {"value": 6, "label": "Every day"}]
+UCLA_OPTIONS = [{"value": 1, "label": "Hardly ever"}, {"value": 2, "label": "Some of the time"}, {"value": 3, "label": "Often"}]
+
+# Section metadata for gamified UI
+ASSESSMENT_SECTIONS = [
+    {"id": "mood", "scale": "PHQ-9", "title": "How are you feeling?", "subtitle": "These questions measure your mood over the past two weeks.", "icon": "heart", "color": "#C17B2F", "count": 9},
+    {"id": "anxiety", "scale": "GAD-7", "title": "What is weighing on your mind?", "subtitle": "These questions assess your anxiety levels.", "icon": "brain", "color": "#E8A84C", "count": 7},
+    {"id": "stress", "scale": "PSS-10", "title": "How stressed are you?", "subtitle": "In the last month, how often have you felt this way? (PSS-10, Cohen 1983)", "icon": "zap", "color": "#C0726A", "count": 10},
+    {"id": "sleep", "scale": "PSQI", "title": "How are you sleeping?", "subtitle": "Sleep quality over the past month. (PSQI, Buysse 1989)", "icon": "moon", "color": "#4A6FA5", "count": 8},
+    {"id": "burnout", "scale": "MBI-HSS-SUBSET", "title": "How is your work energy?", "subtitle": "These questions measure burnout dimensions. (MBI, Maslach 1981)", "icon": "flame", "color": "#1C1C1E", "count": 6},
+    {"id": "connection", "scale": "UCLA-3", "title": "How connected do you feel?", "subtitle": "A brief measure of social connection. (UCLA-3, Hughes 2004)", "icon": "users", "color": "#7B6FA5", "count": 3},
+]
+
 ASSESSMENT_QUESTIONS = [
-    # PHQ-9 (0-3 scale)
-    {"id": "phq9_1", "scale": "PHQ-9", "dimension": "depression", "text": "Little interest or pleasure in doing things", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "phq9_2", "scale": "PHQ-9", "dimension": "depression", "text": "Feeling down, depressed, or hopeless", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "phq9_3", "scale": "PHQ-9", "dimension": "depression", "text": "Trouble falling or staying asleep, or sleeping too much", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "phq9_4", "scale": "PHQ-9", "dimension": "depression", "text": "Feeling tired or having little energy", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "phq9_5", "scale": "PHQ-9", "dimension": "depression", "text": "Poor appetite or overeating", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "phq9_6", "scale": "PHQ-9", "dimension": "depression", "text": "Feeling bad about yourself, or that you are a failure, or have let yourself or your family down", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "phq9_7", "scale": "PHQ-9", "dimension": "depression", "text": "Trouble concentrating on things, such as reading or watching television", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "phq9_8", "scale": "PHQ-9", "dimension": "depression", "text": "Moving or speaking so slowly that other people could have noticed, or being so fidgety or restless", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "phq9_9", "scale": "PHQ-9", "dimension": "depression", "text": "Thoughts that you would be better off dead, or of hurting yourself in some way", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    # GAD-7 (0-3 scale)
-    {"id": "gad7_1", "scale": "GAD-7", "dimension": "anxiety", "text": "Feeling nervous, anxious, or on edge", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "gad7_2", "scale": "GAD-7", "dimension": "anxiety", "text": "Not being able to stop or control worrying", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "gad7_3", "scale": "GAD-7", "dimension": "anxiety", "text": "Worrying too much about different things", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "gad7_4", "scale": "GAD-7", "dimension": "anxiety", "text": "Trouble relaxing", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "gad7_5", "scale": "GAD-7", "dimension": "anxiety", "text": "Being so restless that it is hard to sit still", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "gad7_6", "scale": "GAD-7", "dimension": "anxiety", "text": "Becoming easily annoyed or irritable", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    {"id": "gad7_7", "scale": "GAD-7", "dimension": "anxiety", "text": "Feeling afraid, as if something awful might happen", "options": [{"value": 0, "label": "Not at all"}, {"value": 1, "label": "Several days"}, {"value": 2, "label": "More than half the days"}, {"value": 3, "label": "Nearly every day"}]},
-    # MBI-HSS Subset (0-6 scale): 3 EE, 2 DP, 1 PA
-    {"id": "mbi_ee1", "scale": "MBI-HSS-SUBSET", "dimension": "emotional_exhaustion", "text": "I feel emotionally drained from my work", "options": [{"value": 0, "label": "Never"}, {"value": 1, "label": "A few times a year"}, {"value": 2, "label": "Once a month"}, {"value": 3, "label": "A few times a month"}, {"value": 4, "label": "Once a week"}, {"value": 5, "label": "A few times a week"}, {"value": 6, "label": "Every day"}]},
-    {"id": "mbi_ee2", "scale": "MBI-HSS-SUBSET", "dimension": "emotional_exhaustion", "text": "I feel used up at the end of the workday", "options": [{"value": 0, "label": "Never"}, {"value": 1, "label": "A few times a year"}, {"value": 2, "label": "Once a month"}, {"value": 3, "label": "A few times a month"}, {"value": 4, "label": "Once a week"}, {"value": 5, "label": "A few times a week"}, {"value": 6, "label": "Every day"}]},
-    {"id": "mbi_ee3", "scale": "MBI-HSS-SUBSET", "dimension": "emotional_exhaustion", "text": "I feel fatigued when I get up in the morning and have to face another day on the job", "options": [{"value": 0, "label": "Never"}, {"value": 1, "label": "A few times a year"}, {"value": 2, "label": "Once a month"}, {"value": 3, "label": "A few times a month"}, {"value": 4, "label": "Once a week"}, {"value": 5, "label": "A few times a week"}, {"value": 6, "label": "Every day"}]},
-    {"id": "mbi_dp1", "scale": "MBI-HSS-SUBSET", "dimension": "depersonalization", "text": "I feel I treat some patients as if they were impersonal objects", "options": [{"value": 0, "label": "Never"}, {"value": 1, "label": "A few times a year"}, {"value": 2, "label": "Once a month"}, {"value": 3, "label": "A few times a month"}, {"value": 4, "label": "Once a week"}, {"value": 5, "label": "A few times a week"}, {"value": 6, "label": "Every day"}]},
-    {"id": "mbi_dp2", "scale": "MBI-HSS-SUBSET", "dimension": "depersonalization", "text": "I have become more callous toward people since I took this job", "options": [{"value": 0, "label": "Never"}, {"value": 1, "label": "A few times a year"}, {"value": 2, "label": "Once a month"}, {"value": 3, "label": "A few times a month"}, {"value": 4, "label": "Once a week"}, {"value": 5, "label": "A few times a week"}, {"value": 6, "label": "Every day"}]},
-    {"id": "mbi_pa1", "scale": "MBI-HSS-SUBSET", "dimension": "personal_accomplishment", "text": "I feel I am positively influencing other people's lives through my work", "options": [{"value": 0, "label": "Never"}, {"value": 1, "label": "A few times a year"}, {"value": 2, "label": "Once a month"}, {"value": 3, "label": "A few times a month"}, {"value": 4, "label": "Once a week"}, {"value": 5, "label": "A few times a week"}, {"value": 6, "label": "Every day"}]},
-    # UCLA-3 (1-3 scale)
-    {"id": "ucla_1", "scale": "UCLA-3", "dimension": "loneliness", "text": "How often do you feel that you lack companionship?", "options": [{"value": 1, "label": "Hardly ever"}, {"value": 2, "label": "Some of the time"}, {"value": 3, "label": "Often"}]},
-    {"id": "ucla_2", "scale": "UCLA-3", "dimension": "loneliness", "text": "How often do you feel left out?", "options": [{"value": 1, "label": "Hardly ever"}, {"value": 2, "label": "Some of the time"}, {"value": 3, "label": "Often"}]},
-    {"id": "ucla_3", "scale": "UCLA-3", "dimension": "loneliness", "text": "How often do you feel isolated from others?", "options": [{"value": 1, "label": "Hardly ever"}, {"value": 2, "label": "Some of the time"}, {"value": 3, "label": "Often"}]},
+    # === SECTION 1: PHQ-9 — Mood (9 questions) ===
+    {"id": "phq9_1", "scale": "PHQ-9", "section": "mood", "dimension": "depression", "text": "Little interest or pleasure in doing things", "options": PHQ9_OPTIONS},
+    {"id": "phq9_2", "scale": "PHQ-9", "section": "mood", "dimension": "depression", "text": "Feeling down, depressed, or hopeless", "options": PHQ9_OPTIONS},
+    {"id": "phq9_3", "scale": "PHQ-9", "section": "mood", "dimension": "depression", "text": "Trouble falling or staying asleep, or sleeping too much", "options": PHQ9_OPTIONS},
+    {"id": "phq9_4", "scale": "PHQ-9", "section": "mood", "dimension": "depression", "text": "Feeling tired or having little energy", "options": PHQ9_OPTIONS},
+    {"id": "phq9_5", "scale": "PHQ-9", "section": "mood", "dimension": "depression", "text": "Poor appetite or overeating", "options": PHQ9_OPTIONS},
+    {"id": "phq9_6", "scale": "PHQ-9", "section": "mood", "dimension": "depression", "text": "Feeling bad about yourself \u2014 or that you are a failure or have let yourself or your family down", "options": PHQ9_OPTIONS},
+    {"id": "phq9_7", "scale": "PHQ-9", "section": "mood", "dimension": "depression", "text": "Trouble concentrating on things, such as reading the newspaper or watching television", "options": PHQ9_OPTIONS},
+    {"id": "phq9_8", "scale": "PHQ-9", "section": "mood", "dimension": "depression", "text": "Moving or speaking so slowly that other people could have noticed? Or the opposite \u2014 being so fidgety or restless that you have been moving around a lot more than usual", "options": PHQ9_OPTIONS},
+    {"id": "phq9_9", "scale": "PHQ-9", "section": "mood", "dimension": "depression", "text": "Thoughts that you would be better off dead, or of hurting yourself in some way", "options": PHQ9_OPTIONS},
+    # === SECTION 2: GAD-7 — Anxiety (7 questions) ===
+    {"id": "gad7_1", "scale": "GAD-7", "section": "anxiety", "dimension": "anxiety", "text": "Feeling nervous, anxious, or on edge", "options": GAD7_OPTIONS},
+    {"id": "gad7_2", "scale": "GAD-7", "section": "anxiety", "dimension": "anxiety", "text": "Not being able to stop or control worrying", "options": GAD7_OPTIONS},
+    {"id": "gad7_3", "scale": "GAD-7", "section": "anxiety", "dimension": "anxiety", "text": "Worrying too much about different things", "options": GAD7_OPTIONS},
+    {"id": "gad7_4", "scale": "GAD-7", "section": "anxiety", "dimension": "anxiety", "text": "Trouble relaxing", "options": GAD7_OPTIONS},
+    {"id": "gad7_5", "scale": "GAD-7", "section": "anxiety", "dimension": "anxiety", "text": "Being so restless that it is hard to sit still", "options": GAD7_OPTIONS},
+    {"id": "gad7_6", "scale": "GAD-7", "section": "anxiety", "dimension": "anxiety", "text": "Becoming easily annoyed or irritable", "options": GAD7_OPTIONS},
+    {"id": "gad7_7", "scale": "GAD-7", "section": "anxiety", "dimension": "anxiety", "text": "Feeling afraid, as if something awful might happen", "options": GAD7_OPTIONS},
+    # === SECTION 3: PSS-10 — Stress (10 questions) ===
+    {"id": "pss_1", "scale": "PSS-10", "section": "stress", "dimension": "stress", "text": "In the last month, how often have you been upset because of something that happened unexpectedly?", "options": PSS_OPTIONS, "reverse": False},
+    {"id": "pss_2", "scale": "PSS-10", "section": "stress", "dimension": "stress", "text": "In the last month, how often have you felt that you were unable to control the important things in your life?", "options": PSS_OPTIONS, "reverse": False},
+    {"id": "pss_3", "scale": "PSS-10", "section": "stress", "dimension": "stress", "text": "In the last month, how often have you felt nervous and stressed?", "options": PSS_OPTIONS, "reverse": False},
+    {"id": "pss_4", "scale": "PSS-10", "section": "stress", "dimension": "stress", "text": "In the last month, how often have you felt confident about your ability to handle your personal problems?", "options": PSS_OPTIONS, "reverse": True},
+    {"id": "pss_5", "scale": "PSS-10", "section": "stress", "dimension": "stress", "text": "In the last month, how often have you felt that things were going your way?", "options": PSS_OPTIONS, "reverse": True},
+    {"id": "pss_6", "scale": "PSS-10", "section": "stress", "dimension": "stress", "text": "In the last month, how often have you found that you could not cope with all the things that you had to do?", "options": PSS_OPTIONS, "reverse": False},
+    {"id": "pss_7", "scale": "PSS-10", "section": "stress", "dimension": "stress", "text": "In the last month, how often have you been able to control irritations in your life?", "options": PSS_OPTIONS, "reverse": True},
+    {"id": "pss_8", "scale": "PSS-10", "section": "stress", "dimension": "stress", "text": "In the last month, how often have you felt that you were on top of things?", "options": PSS_OPTIONS, "reverse": True},
+    {"id": "pss_9", "scale": "PSS-10", "section": "stress", "dimension": "stress", "text": "In the last month, how often have you been angered because of things that happened that were outside of your control?", "options": PSS_OPTIONS, "reverse": False},
+    {"id": "pss_10", "scale": "PSS-10", "section": "stress", "dimension": "stress", "text": "In the last month, how often have you felt difficulties were piling up so high that you could not overcome them?", "options": PSS_OPTIONS, "reverse": False},
+    # === SECTION 4: PSQI — Sleep (8 adapted questions) ===
+    {"id": "psqi_1", "scale": "PSQI", "section": "sleep", "dimension": "sleep_quality", "text": "During the past month, how would you rate your sleep quality overall?", "options": [{"value": 0, "label": "Very good"}, {"value": 1, "label": "Fairly good"}, {"value": 2, "label": "Fairly bad"}, {"value": 3, "label": "Very bad"}]},
+    {"id": "psqi_2", "scale": "PSQI", "section": "sleep", "dimension": "sleep_quality", "text": "During the past month, how often have you had trouble sleeping because you cannot get to sleep within 30 minutes?", "options": PSQI_FREQ},
+    {"id": "psqi_3", "scale": "PSQI", "section": "sleep", "dimension": "sleep_quality", "text": "During the past month, how often have you woken up in the middle of the night or early morning?", "options": PSQI_FREQ},
+    {"id": "psqi_4", "scale": "PSQI", "section": "sleep", "dimension": "sleep_quality", "text": "During the past month, how often have you had bad dreams?", "options": PSQI_FREQ},
+    {"id": "psqi_5", "scale": "PSQI", "section": "sleep", "dimension": "sleep_quality", "text": "During the past month, how often have you had trouble sleeping because you cannot breathe comfortably?", "options": PSQI_FREQ},
+    {"id": "psqi_6", "scale": "PSQI", "section": "sleep", "dimension": "sleep_quality", "text": "During the past month, how often have you taken medicine to help you sleep?", "options": PSQI_FREQ},
+    {"id": "psqi_7", "scale": "PSQI", "section": "sleep", "dimension": "sleep_quality", "text": "During the past month, how often have you had trouble staying awake while driving, eating meals, or engaging in social activity?", "options": PSQI_FREQ},
+    {"id": "psqi_8", "scale": "PSQI", "section": "sleep", "dimension": "sleep_quality", "text": "During the past month, how much of a problem has it been for you to keep up enough enthusiasm to get things done?", "options": [{"value": 0, "label": "No problem at all"}, {"value": 1, "label": "Only a very slight problem"}, {"value": 2, "label": "Somewhat of a problem"}, {"value": 3, "label": "A very big problem"}]},
+    # === SECTION 5: MBI-HSS Subset — Burnout (6 questions) ===
+    {"id": "mbi_ee1", "scale": "MBI-HSS-SUBSET", "section": "burnout", "dimension": "emotional_exhaustion", "text": "I feel emotionally drained from my work", "options": MBI_OPTIONS},
+    {"id": "mbi_ee2", "scale": "MBI-HSS-SUBSET", "section": "burnout", "dimension": "emotional_exhaustion", "text": "I feel used up at the end of the workday", "options": MBI_OPTIONS},
+    {"id": "mbi_ee3", "scale": "MBI-HSS-SUBSET", "section": "burnout", "dimension": "emotional_exhaustion", "text": "I feel fatigued when I get up in the morning and have to face another day on the job", "options": MBI_OPTIONS},
+    {"id": "mbi_dp1", "scale": "MBI-HSS-SUBSET", "section": "burnout", "dimension": "depersonalization", "text": "I feel I look after certain patients impersonally, as if they were objects", "options": MBI_OPTIONS},
+    {"id": "mbi_dp2", "scale": "MBI-HSS-SUBSET", "section": "burnout", "dimension": "depersonalization", "text": "I have become more callous toward people since I took this job", "options": MBI_OPTIONS},
+    {"id": "mbi_pa1", "scale": "MBI-HSS-SUBSET", "section": "burnout", "dimension": "personal_accomplishment", "text": "Through my work, I feel that I have a positive influence on people", "options": MBI_OPTIONS},
+    # === SECTION 6: UCLA-3 — Connection (3 questions) ===
+    {"id": "ucla_1", "scale": "UCLA-3", "section": "connection", "dimension": "loneliness", "text": "How often do you feel that you lack companionship?", "options": UCLA_OPTIONS},
+    {"id": "ucla_2", "scale": "UCLA-3", "section": "connection", "dimension": "loneliness", "text": "How often do you feel left out?", "options": UCLA_OPTIONS},
+    {"id": "ucla_3", "scale": "UCLA-3", "section": "connection", "dimension": "loneliness", "text": "How often do you feel isolated from others?", "options": UCLA_OPTIONS},
 ]
 
 # ============================================================
@@ -207,7 +244,7 @@ ASSESSMENT_QUESTIONS = [
 # ============================================================
 @api_router.get("/assessments/questions")
 async def get_assessment_questions():
-    return {"questions": ASSESSMENT_QUESTIONS, "total": len(ASSESSMENT_QUESTIONS)}
+    return {"questions": ASSESSMENT_QUESTIONS, "sections": ASSESSMENT_SECTIONS, "total": len(ASSESSMENT_QUESTIONS)}
 
 @api_router.post("/assessments/submit")
 async def submit_assessment(submission: AssessmentSubmission, request: Request):
@@ -240,6 +277,20 @@ async def submit_assessment(submission: AssessmentSubmission, request: Request):
     ucla_score = sum(responses.get(qid, 0) for qid in ucla_ids)
     scales["UCLA-3"] = {"raw_scores": {qid: responses.get(qid, 0) for qid in ucla_ids}, "computed_score": ucla_score, "max": 9}
 
+    # PSS-10 (with reverse scoring for items 4,5,7,8)
+    pss_ids = [q["id"] for q in ASSESSMENT_QUESTIONS if q["scale"] == "PSS-10"]
+    pss_reverse_ids = [q["id"] for q in ASSESSMENT_QUESTIONS if q["scale"] == "PSS-10" and q.get("reverse")]
+    pss_score = 0
+    for qid in pss_ids:
+        raw = responses.get(qid, 0)
+        pss_score += (4 - raw) if qid in pss_reverse_ids else raw
+    scales["PSS-10"] = {"raw_scores": {qid: responses.get(qid, 0) for qid in pss_ids}, "computed_score": pss_score, "max": 40}
+
+    # PSQI (simplified)
+    psqi_ids = [q["id"] for q in ASSESSMENT_QUESTIONS if q["scale"] == "PSQI"]
+    psqi_score = sum(responses.get(qid, 0) for qid in psqi_ids)
+    scales["PSQI"] = {"raw_scores": {qid: responses.get(qid, 0) for qid in psqi_ids}, "computed_score": psqi_score, "max": 24}
+
     # Store each scale as separate assessment record
     assessment_ids = []
     for scale_name, scale_data in scales.items():
@@ -253,10 +304,11 @@ async def submit_assessment(submission: AssessmentSubmission, request: Request):
         await db.assessments.insert_one({**doc, "_id": aid})
         assessment_ids.append(aid)
 
-    # Generate initial wellness profile from assessment scores
+    # Generate initial wellness profile from all 6 scales
     anxiety_pct = round((gad7_score / 21) * 100)
-    stress_pct = round(((phq9_score / 27) * 0.5 + (ee_score / 18) * 0.5) * 100)
+    stress_pct = round(((pss_score / 40) * 0.6 + (phq9_score / 27) * 0.2 + (ee_score / 18) * 0.2) * 100)
     loneliness_pct = round(((ucla_score - 3) / 6) * 100)
+    sleep_pct = round((psqi_score / 24) * 100)
     burnout_pct = round(((ee_score / 18) * 0.4 + (dp_score / 12) * 0.3 + ((6 - pa_score) / 6) * 0.3) * 100)
 
     # Determine archetype
@@ -269,6 +321,7 @@ async def submit_assessment(submission: AssessmentSubmission, request: Request):
         "id": profile_id, "user_id": user["id"], "archetype": archetype,
         "anxiety_score": anxiety_pct, "stress_score": stress_pct,
         "loneliness_score": loneliness_pct, "burnout_score": burnout_pct,
+        "sleep_score": sleep_pct,
         "summary": summary,
         "recommended_forum_id": recommended_forum.get("id") if recommended_forum else None,
         "recommended_forum_name": recommended_forum.get("name") if recommended_forum else None,
@@ -277,6 +330,8 @@ async def submit_assessment(submission: AssessmentSubmission, request: Request):
         "citations": [
             "PHQ-9: Kroenke, Spitzer & Williams, J Gen Intern Med 2001",
             "GAD-7: Spitzer, Kroenke, Williams & Lowe, Arch Intern Med 2006",
+            "PSS-10: Cohen, Kamarck & Mermelstein, J Health Soc Behav 1983",
+            "PSQI: Buysse, Reynolds, Monk, Berman & Kupfer, Psychiatry Res 1989",
             "MBI-HSS: Maslach & Jackson, J Occup Behav 1981",
             "UCLA-3: Hughes, Waite, Hawkley & Cacioppo, Res Aging 2004"
         ]
@@ -330,10 +385,14 @@ async def get_assessment_results(request: Request):
 # MODERATION HELPERS
 # ============================================================
 CRISIS_KEYWORDS = [
-    r"\b(kill\s*(my)?self)\b", r"\b(want\s*to\s*die)\b", r"\b(ending\s*it)\b",
-    r"\b(no\s*point)\b", r"\b(can'?t\s*go\s*on)\b", r"\b(better\s*off\s*dead)\b",
-    r"\b(don'?t\s*want\s*to\s*be\s*here)\b", r"\b(suicid)\b", r"\b(self[- ]?harm)\b",
-    r"\b(hurt\s*(my)?self)\b", r"\b(not\s*worth\s*(it|living))\b"
+    r"\bkill\s*(my)?self\b", r"\bwant\s*to\s*die\b", r"\bending\s*it\b",
+    r"\bno\s*point\b", r"\bcan'?t\s*go\s*on\b", r"\bbetter\s*off\s*dead\b",
+    r"\bdon'?t\s*want\s*to\s*be\s*here\b", r"\bsuicid\w*\b", r"\bself[- ]?harm\w*\b",
+    r"\bhurt\s*(my)?self\b", r"\bnot\s*worth\s*(it|living)\b",
+    r"\bend\s*(my|this)\s*life\b", r"\bjump\s*off\b", r"\bwant\s*to\s*end\b",
+    r"\bno\s*reason\s*to\s*live\b", r"\bwish\s*i\s*was\s*dead\b",
+    r"\bi\s*can'?t\s*do\s*this\s*anymore\b", r"\bgive\s*up\b",
+    r"\bkill\s*me\b", r"\bwanna\s*die\b"
 ]
 
 MEDICATION_PATTERNS = [
@@ -465,8 +524,21 @@ async def create_forum_post(forum_id: str, req: ReflectionCreate, request: Reque
     if not forum:
         raise HTTPException(status_code=404, detail="Forum not found")
     mod_result = check_moderation(req.body)
+
+    # CRISIS GUARDRAIL: NEVER save crisis content. Block it and log.
     if mod_result["status"] == "paused_crisis":
-        return {"moderation": mod_result, "posted": False}
+        # Log the crisis event for human review
+        event_id = str(uuid.uuid4())
+        await db.crisis_events.insert_one({
+            "_id": event_id, "id": event_id, "user_id": user["id"],
+            "trigger_text": req.body[:500],
+            "helpline_shown": "auto_detected",
+            "action_taken": "guardrail_blocked",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        logger.warning(f"CRISIS GUARDRAIL: Blocked post from user {user['id']} - crisis content detected")
+        return {"moderation": mod_result, "posted": False, "crisis_blocked": True}
+
     if mod_result["status"] == "blocked":
         return {"moderation": mod_result, "posted": False}
 

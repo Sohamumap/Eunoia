@@ -6,6 +6,7 @@ import { Users, ArrowRight, RefreshCw } from 'lucide-react';
 const barColors = {
   anxiety: '#E8A84C',
   stress: '#C0726A',
+  sleep: '#4A6FA5',
   loneliness: '#7B6FA5',
   burnout: '#1C1C1E',
 };
@@ -112,8 +113,9 @@ export default function Profile() {
           <div className="bg-card-bg rounded-eunoia shadow-eunoia p-8 mb-8 animate-fade-up stagger-2">
             <ScoreBar label="Anxiety" score={profile.anxiety_score} color={barColors.anxiety} delay={150} />
             <ScoreBar label="Stress" score={profile.stress_score} color={barColors.stress} delay={300} />
-            <ScoreBar label="Loneliness" score={profile.loneliness_score} color={barColors.loneliness} delay={450} />
-            <ScoreBar label="Burnout" score={profile.burnout_score} color={barColors.burnout} delay={600} />
+            <ScoreBar label="Sleep Disruption" score={profile.sleep_score || 0} color={barColors.sleep} delay={450} />
+            <ScoreBar label="Loneliness" score={profile.loneliness_score} color={barColors.loneliness} delay={600} />
+            <ScoreBar label="Burnout" score={profile.burnout_score} color={barColors.burnout} delay={750} />
           </div>
         )}
 

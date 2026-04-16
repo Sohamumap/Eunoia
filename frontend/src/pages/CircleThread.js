@@ -51,6 +51,11 @@ export default function CircleThread() {
 
   const handlePost = async () => {
     if (!text.trim()) return;
+    // Client-side crisis check before even sending
+    if (modResult?.status === 'paused_crisis') {
+      setShowCrisis(true);
+      return;
+    }
     setPosting(true);
     try {
       const { data } = await api('post', `/forums/${id}/posts`, { body: text, is_private: false });
@@ -58,8 +63,10 @@ export default function CircleThread() {
         setPosts(prev => [data.post, ...prev]);
         setText('');
         setModResult(null);
-      } else if (data.moderation?.status === 'paused_crisis') {
+      } else if (data.moderation?.status === 'paused_crisis' || data.crisis_blocked) {
         setShowCrisis(true);
+        setText('');
+        setModResult(null);
       }
     } catch (err) {
       console.error(err);
@@ -132,6 +139,24 @@ export default function CircleThread() {
           {modResult && modResult.status !== 'approved' && (
             <div className="mt-3 animate-fade-up" data-testid="moderation-preview">
               {modResult.highlights?.length > 0 && renderHighlightedText()}
+
+              {modResult.status === 'paused_crisis' && (
+                <div className="mt-3 p-4 rounded-xl bg-rose/10 border-2 border-rose/30">
+                  <p className="font-sans text-sm text-rose font-medium flex items-center gap-1.5 mb-2">
+                    <AlertTriangle size={15} /> We are concerned about what you have written.
+                  </p>
+                  <p className="font-sans text-xs text-charcoal leading-relaxed mb-3">
+                    It sounds like you may be going through something serious. This post cannot be shared, but we want to make sure you are safe. Please reach out to someone who can help.
+                  </p>
+                  <button
+                    onClick={() => setShowCrisis(true)}
+                    data-testid="crisis-trigger-btn"
+                    className="px-5 py-2.5 rounded-full bg-rose text-white font-sans text-sm font-medium hover:-translate-y-[1px] transition-all"
+                  >
+                    Get Help Now
+                  </button>
+                </div>
+              )}
 
               {modResult.status === 'needs_rewrite' && modResult.suggestion && (
                 <div className="mt-3 p-4 rounded-xl bg-accent/5 border border-accent/20">
