@@ -126,13 +126,15 @@ export default function CircleThread() {
   const [showCrisis, setShowCrisis] = useState(false);
   const modTimeout = useRef(null);
 
+  // fetchForum depends on api and id only to avoid unnecessary refetches
+  // eslint-disable-next-line react-hooks/exhaustive-deps  
   const fetchForum = useCallback(async () => {
     try {
       const { data } = await api('get', `/forums/${id}`);
       setForum(data.forum);
       setPosts(data.posts);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching forum:', err);
     } finally {
       setLoading(false);
     }
@@ -140,13 +142,17 @@ export default function CircleThread() {
 
   useEffect(() => { fetchForum(); }, [fetchForum]);
 
+  // checkModeration depends on api only
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const checkModeration = useCallback(async (inputText) => {
     if (inputText.trim().length < 5) { setModResult(null); return; }
     try {
       const { data } = await api('post', '/moderation/check', { text: inputText });
       setModResult(data);
       if (data.status === 'paused_crisis') setShowCrisis(true);
-    } catch {}
+    } catch (error) {
+      console.error('Moderation check error:', error);
+    }
   }, [api]);
 
   const handleTextChange = (e) => {

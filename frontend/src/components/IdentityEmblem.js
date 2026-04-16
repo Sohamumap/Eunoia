@@ -55,7 +55,7 @@ export default function IdentityEmblem({ userId, size = 'md', className = '' }) 
     >
       {rings.map((ring, index) => (
         <div
-          key={index}
+          key={`ring-${userId}-${index}-${ring.color}`}
           className="absolute rounded-full"
           style={{
             width: ring.size,

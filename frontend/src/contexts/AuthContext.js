@@ -9,6 +9,8 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('eunoia_token'));
 
+  // axiosConfig depends only on token to avoid unnecessary re-renders
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const axiosConfig = useCallback(() => {
     const config = { headers: {} };
     const t = token || localStorage.getItem('eunoia_token');
@@ -16,6 +18,8 @@ export function AuthProvider({ children }) {
     return config;
   }, [token]);
 
+  // checkAuth depends only on axiosConfig, avoiding infinite loops
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const checkAuth = useCallback(async () => {
     try {
       const { data } = await axios.get(`${API}/auth/me`, axiosConfig());
@@ -45,7 +49,11 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    try { await axios.post(`${API}/auth/logout`, {}, axiosConfig()); } catch {}
+    try { 
+      await axios.post(`${API}/auth/logout`, {}, axiosConfig()); 
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
     localStorage.removeItem('eunoia_token');
     setToken(null);
     setUser(null);

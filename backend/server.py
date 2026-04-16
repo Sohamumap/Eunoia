@@ -16,7 +16,8 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta
 import jwt as pyjwt
-import random
+import secrets
+import random  # Only for non-security-sensitive operations
 
 # MongoDB
 mongo_url = os.environ['MONGO_URL']
@@ -386,6 +387,7 @@ def generate_assessment_summary(archetype, anxiety, stress, loneliness, burnout)
     return summaries.get(archetype, summaries["The Over-Committed Healer"])
 
 async def get_recommended_forum(anxiety, stress, loneliness, burnout):
+    forum = None
     if stress >= 70 or burnout >= 70:
         forum = await db.forums.find_one({"name": "The Sleepless Ward"}, {"_id": 0})
     elif anxiety >= 60:
@@ -394,6 +396,11 @@ async def get_recommended_forum(anxiety, stress, loneliness, burnout):
         forum = await db.forums.find_one({"name": "New Residents"}, {"_id": 0})
     else:
         forum = await db.forums.find_one({"name": "General Burnout"}, {"_id": 0})
+    
+    # Fallback: return any forum if specific one not found
+    if not forum:
+        forum = await db.forums.find_one({}, {"_id": 0})
+    
     return forum
 
 @api_router.get("/assessments/results")
