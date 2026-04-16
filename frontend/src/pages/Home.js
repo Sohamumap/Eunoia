@@ -13,20 +13,48 @@ function StatRing({ value, max = 100, color = 'var(--accent)', label, sub, size 
   const r = size / 2 - 8;
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  
   return (
-    <div className="relative inline-flex flex-col items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(232,228,222,0.7)" strokeWidth="6" />
+    <div 
+      className="relative inline-flex flex-col items-center justify-center group cursor-pointer" 
+      style={{ width: size, height: size }}
+    >
+      <svg width={size} height={size} className="-rotate-90 transition-transform group-hover:scale-105 duration-300">
+        <circle 
+          cx={size / 2} 
+          cy={size / 2} 
+          r={r} 
+          fill="none" 
+          stroke="rgba(232,228,222,0.7)" 
+          strokeWidth="6" 
+        />
         <circle
-          cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="6" strokeLinecap="round"
+          cx={size / 2} 
+          cy={size / 2} 
+          r={r} 
+          fill="none" 
+          stroke={color} 
+          strokeWidth="6" 
+          strokeLinecap="round"
           strokeDasharray={`${(pct / 100) * c} ${c}`}
-          style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.22, 1, 0.36, 1)' }}
+          style={{ 
+            transition: 'stroke-dasharray 1.2s cubic-bezier(0.22, 1, 0.36, 1)',
+            filter: 'drop-shadow(0 0 8px rgba(232,168,76,0.3))'
+          }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-serif text-xl font-bold text-charcoal">{label}</span>
+        <span className="font-serif text-xl font-bold text-charcoal group-hover:scale-110 transition-transform">{label}</span>
         {sub && <span className="font-sans text-[10px] text-mid">{sub}</span>}
       </div>
+      {/* Hover glow effect */}
+      <div 
+        className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle, ${color}20 0%, transparent 70%)`,
+          filter: 'blur(10px)'
+        }}
+      />
     </div>
   );
 }
@@ -164,65 +192,80 @@ export default function Home() {
             )}
           </SoftCard>
 
-          {/* BREATHE CTA — image-5 mushroom tile analogue */}
-          <SoftCard tint="dusk" className="md:col-span-3 flex items-center" padding="p-7" data-testid="tile-breathe">
+          {/* BREATHE CTA — Enhanced with glassmorphic effects */}
+          <SoftCard tint="dusk" className="md:col-span-3 flex items-center group hover:scale-[1.02] transition-transform duration-300" padding="p-7" data-testid="tile-breathe">
             <div className="flex items-center gap-5 w-full">
-              <div className="relative flex-shrink-0 w-20 h-20">
+              <div className="relative flex-shrink-0 w-20 h-20 group-hover:scale-110 transition-transform duration-500">
+                {/* Pulsing glow rings */}
                 <div className="absolute inset-0 rounded-full animate-breathe" style={{
                   background: 'radial-gradient(circle at 35% 30%, #FFE2C7 0%, #E8A84C 50%, #C17B2F 100%)',
                   boxShadow: '0 0 40px -5px rgba(232,168,76,0.6)',
                 }} />
+                <div className="absolute inset-0 rounded-full animate-breathe opacity-50" style={{
+                  background: 'radial-gradient(circle at 35% 30%, #FFE2C7 0%, transparent 70%)',
+                  animationDelay: '0.5s',
+                  filter: 'blur(8px)'
+                }} />
               </div>
               <div className="flex-1 text-white">
                 <p className="font-sans text-[11px] uppercase tracking-[0.14em] opacity-70 mb-1">Two minutes</p>
-                <h3 className="font-serif text-2xl font-semibold mb-1">Breathe.</h3>
+                <h3 className="font-serif text-2xl font-semibold mb-1 group-hover:translate-x-1 transition-transform">Breathe.</h3>
                 <p className="font-sans text-sm opacity-85 leading-relaxed">A guided 4-7-8 orb. Reset your nervous system.</p>
-                <Link to="/hub" className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium no-underline hover:bg-white/30 transition-colors">
-                  <Wind size={13} /> Begin practice
+                <Link to="/hub" className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-medium no-underline hover:bg-white/30 hover:gap-2 transition-all duration-200">
+                  <Wind size={13} className="group-hover:rotate-12 transition-transform" /> Begin practice
                 </Link>
               </div>
             </div>
           </SoftCard>
 
-          {/* JOURNEY NUMBERS */}
-          <SoftCard tint="sage" className="md:col-span-2" padding="p-6" data-testid="tile-journey">
+          {/* JOURNEY NUMBERS - Enhanced with hover effects */}
+          <SoftCard tint="sage" className="md:col-span-2 group hover:scale-[1.02] transition-transform" padding="p-6" data-testid="tile-journey">
             <p className="font-sans text-[11px] uppercase tracking-[0.12em] text-mid mb-3">Your journey</p>
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white/30 transition-colors cursor-pointer">
                 <div className="flex items-center gap-2">
-                  <BookOpen size={14} className="text-sage" />
+                  <div className="p-1.5 rounded-lg bg-sage/20">
+                    <BookOpen size={14} className="text-sage" />
+                  </div>
                   <span className="font-sans text-sm text-charcoal">Reflections</span>
                 </div>
                 <span className="font-serif text-xl font-semibold text-charcoal">{summary.reflection_count}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white/30 transition-colors cursor-pointer">
                 <div className="flex items-center gap-2">
-                  <Activity size={14} className="text-sage" />
+                  <div className="p-1.5 rounded-lg bg-sage/20">
+                    <Activity size={14} className="text-sage" />
+                  </div>
                   <span className="font-sans text-sm text-charcoal">Assessments</span>
                 </div>
                 <span className="font-serif text-xl font-semibold text-charcoal">{summary.assessment_count}</span>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white/30 transition-colors cursor-pointer">
                 <div className="flex items-center gap-2">
-                  <Flame size={14} className="text-accent" />
+                  <div className="p-1.5 rounded-lg bg-accent/20 animate-pulse-subtle">
+                    <Flame size={14} className="text-accent" />
+                  </div>
                   <span className="font-sans text-sm text-charcoal">Streak</span>
                 </div>
-                <span className="font-serif text-xl font-semibold text-charcoal">{summary.streak}<span className="text-xs text-mid"> d</span></span>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-serif text-xl font-semibold text-charcoal">{summary.streak}</span>
+                  <span className="text-xs text-mid">days</span>
+                </div>
               </div>
             </div>
-            <Link to="/companion" className="inline-flex items-center gap-1 mt-4 text-[12px] text-accent font-medium no-underline">
+            <Link to="/companion" className="inline-flex items-center gap-1 mt-4 text-[12px] text-accent font-medium no-underline hover:gap-2 transition-all">
               Write a reflection <ArrowUpRight size={12} />
             </Link>
           </SoftCard>
 
-          {/* CIRCLES PREVIEW */}
+          {/* CIRCLES PREVIEW - Enhanced with hover effects */}
           <SoftCard tint="peach" className="md:col-span-4" padding="p-6" data-testid="tile-circles">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="font-sans text-[11px] uppercase tracking-[0.12em] text-mid">Peer circles</p>
                 <h3 className="font-serif text-xl font-semibold text-charcoal">People who get it</h3>
               </div>
-              <Link to="/circles" className="flex items-center gap-1 text-[12px] text-accent font-medium no-underline">
+              <Link to="/circles" className="flex items-center gap-1 text-[12px] text-accent font-medium no-underline hover:gap-2 transition-all">
                 Browse all <ArrowUpRight size={13} />
               </Link>
             </div>
@@ -231,15 +274,24 @@ export default function Home() {
                 <Link
                   key={i}
                   to={`/circles/${post.forum_id}`}
-                  className="block p-3 rounded-xl bg-white/60 hover:bg-white/90 transition-colors no-underline"
+                  className="block p-3 rounded-xl bg-white/60 hover:bg-white/90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 no-underline group"
+                  style={{ animationDelay: `${i * 100}ms` }}
                 >
-                  <p className="font-sans text-xs text-accent font-medium mb-0.5">{post.forum_name}</p>
-                  <p className="font-sans text-[13px] text-charcoal leading-snug line-clamp-2">{post.body}</p>
-                  <p className="font-sans text-[10px] text-mid mt-1">{post.display_name}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <p className="font-sans text-xs text-accent font-medium mb-0.5 group-hover:translate-x-0.5 transition-transform">{post.forum_name}</p>
+                      <p className="font-sans text-[13px] text-charcoal leading-snug line-clamp-2">{post.body}</p>
+                      <p className="font-sans text-[10px] text-mid mt-1">{post.display_name}</p>
+                    </div>
+                    <ArrowUpRight size={14} className="text-mid opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                  </div>
                 </Link>
               ))}
               {(!summary.recent_posts || summary.recent_posts.length === 0) && (
-                <p className="font-sans text-xs text-mid italic">Circles are quiet right now. Be the first.</p>
+                <div className="text-center py-6">
+                  <Users size={32} className="mx-auto mb-2 text-mid opacity-50" />
+                  <p className="font-sans text-xs text-mid italic">Circles are quiet right now. Be the first.</p>
+                </div>
               )}
             </div>
           </SoftCard>

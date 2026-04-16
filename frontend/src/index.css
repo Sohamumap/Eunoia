@@ -242,6 +242,7 @@ h1, h2, h3, h4, h5, h6 {
 .animate-slow-pulse { animation: slowPulse 6s ease-in-out infinite; }
 .animate-float { animation: floatY 6s ease-in-out infinite; }
 .animate-spin-slow { animation: spinSlow 40s linear infinite; }
+.animate-pulse-subtle { animation: pulseGlow 2s ease-in-out infinite; }
 
 .stagger-1 { animation-delay: 0.08s; }
 .stagger-2 { animation-delay: 0.18s; }
