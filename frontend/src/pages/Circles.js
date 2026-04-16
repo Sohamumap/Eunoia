@@ -24,11 +24,11 @@ function CircleCard({ circle, onClick }) {
     <GlassCard hover onClick={onClick} className="p-6">
       <IdentityEmblem userId={circle.id} size="md" className="mb-4" />
       
-      <h3 className="text-xl font-serif text-white mb-2">
+      <h3 className="text-xl font-serif text-charcoal mb-2">
         {circle.name}
       </h3>
       
-      <p className="text-sm text-gray-300 mb-4 leading-relaxed">
+      <p className="text-sm text-mid mb-4 leading-relaxed">
         {circle.description}
       </p>
       
@@ -38,7 +38,7 @@ function CircleCard({ circle, onClick }) {
           {circle.tags.map(tag => (
             <span
               key={tag}
-              className="px-3 py-1 rounded-full text-xs font-medium bg-black/30 text-gray-300 border border-white/10"
+              className="px-3 py-1 rounded-full text-xs font-medium bg-warm-white/60 text-charcoal border border-charcoal/10"
             >
               {tag}
             </span>
@@ -47,13 +47,13 @@ function CircleCard({ circle, onClick }) {
       )}
       
       {/* Member Count */}
-      <div className="flex items-center gap-2 text-sm text-gray-400 mb-3">
+      <div className="flex items-center gap-2 text-sm text-mid mb-3">
         <Users size={14} />
         <span>{circle.member_count || circle.seeded_members_count || 0} members</span>
       </div>
       
       {/* Activity Status */}
-      <div className="flex items-center gap-2 text-sm text-gray-300">
+      <div className="flex items-center gap-2 text-sm text-charcoal">
         <span>{activity.emoji}</span>
         <span className="italic">{activity.text}</span>
       </div>
@@ -87,35 +87,21 @@ export default function Circles() {
 
   if (loading) {
     return (
-      <div 
-        className="min-h-screen flex items-center justify-center"
-        style={{
-          background: 'linear-gradient(135deg, #2C1810 0%, #1a1410 100%)'
-        }}
-      >
-        <p className="text-gray-400">Loading circles...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-mid">Loading circles...</p>
       </div>
     );
   }
 
   return (
-    <div 
-      className="min-h-screen pt-20 pb-24 px-4"
-      style={{
-        background: 'linear-gradient(135deg, #2C1810 0%, #1a1410 100%)',
-        backgroundImage: `
-          linear-gradient(135deg, rgba(44, 24, 16, 0.95) 0%, rgba(26, 20, 16, 0.95) 100%),
-          url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
-        `
-      }}
-    >
+    <div className="min-h-screen pt-20 pb-24 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-12 text-center animate-fade-up">
-          <h1 className="text-4xl sm:text-5xl font-serif text-white mb-4">
+          <h1 className="text-4xl sm:text-5xl font-serif text-charcoal mb-4">
             Find your cohort.
           </h1>
-          <p className="text-lg text-gray-300 leading-relaxed">
+          <p className="text-lg text-mid leading-relaxed">
             Anonymous circles for the specific kind of hard you're carrying.
           </p>
         </div>
@@ -133,7 +119,7 @@ export default function Circles() {
 
         {circles.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-gray-400">No circles available yet.</p>
+            <p className="text-mid">No circles available yet.</p>
           </div>
         )}
       </div>

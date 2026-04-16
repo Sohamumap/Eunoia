@@ -10,19 +10,19 @@ export default function ResonanceButtons({ postId, resonances = {}, userResonanc
       type: 'feel_this', 
       emoji: '🔥', 
       label: 'I feel this',
-      color: 'bg-orange-500/20 text-orange-300 hover:bg-orange-500/30'
+      color: 'bg-accent/20 text-accent hover:bg-accent/30'
     },
     { 
       type: 'been_there', 
       emoji: '💛', 
       label: "I've been there",
-      color: 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30'
+      color: 'bg-amber-500/20 text-amber-700 hover:bg-amber-500/30'
     },
     { 
       type: 'not_alone', 
       emoji: '💜', 
       label: "You're not alone",
-      color: 'bg-purple-500/20 text-purple-300 hover:bg-purple-500/30'
+      color: 'bg-lavender/20 text-lavender hover:bg-lavender/30'
     }
   ];
 
@@ -47,7 +47,7 @@ export default function ResonanceButtons({ postId, resonances = {}, userResonanc
               transition-all duration-200
               ${isActive 
                 ? reaction.color.replace('hover:', '')
-                : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                : 'bg-warm-white/50 text-mid hover:bg-warm-white/70'
               }
             `}
           >
@@ -65,7 +65,7 @@ export default function ResonanceButtons({ postId, resonances = {}, userResonanc
       
       {/* Reply button */}
       <button
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/5 text-gray-400 hover:bg-white/10 transition-all"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-warm-white/50 text-mid hover:bg-warm-white/70 transition-all"
       >
         <MessageCircle size={14} />
         <span>Reply</span>

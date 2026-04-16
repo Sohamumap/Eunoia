@@ -44,12 +44,12 @@ function PostItem({ post, onResonate }) {
         <IdentityEmblem userId={post.user_id} size="md" />
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-white font-medium">{post.display_name || 'Anonymous'}</span>
-            <span className="text-gray-500 text-sm">·</span>
-            <span className="text-gray-400 text-sm">{formatTimeAgo(post.created_at)}</span>
+            <span className="text-charcoal font-medium">{post.display_name || 'Anonymous'}</span>
+            <span className="text-mid text-sm">·</span>
+            <span className="text-mid text-sm">{formatTimeAgo(post.created_at)}</span>
           </div>
           {post.role && (
-            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-green-500/20 text-green-300 border border-green-500/30">
+            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-sage/20 text-sage border border-sage/30">
               {post.role}
             </span>
           )}
@@ -57,20 +57,20 @@ function PostItem({ post, onResonate }) {
       </div>
 
       {/* Post Body */}
-      <p className="text-gray-200 leading-relaxed mb-4 whitespace-pre-wrap">
+      <p className="text-charcoal leading-relaxed mb-4 whitespace-pre-wrap">
         {post.body}
       </p>
 
       {/* Moderation Status */}
       {post.moderation_status === 'approved' && (
-        <div className="flex items-center gap-2 text-xs text-green-400 mb-4">
+        <div className="flex items-center gap-2 text-xs text-sage mb-4">
           <Check size={14} />
           <span>This reflection has been reviewed for community safety</span>
         </div>
       )}
 
       {post.moderation_status === 'rewritten' && (
-        <div className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 mb-4">
+        <div className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 mb-4">
           This reflection was gently edited for community safety.
         </div>
       )}
@@ -88,21 +88,21 @@ function PostItem({ post, onResonate }) {
 
       {/* Replies */}
       {post.replies && post.replies.length > 0 && (
-        <div className="mt-6 space-y-4 pl-6 border-l-2 border-white/10">
+        <div className="mt-6 space-y-4 pl-6 border-l-2 border-charcoal/10">
           {post.replies.map(reply => (
             <div key={reply.id} className="flex items-start gap-3">
               <IdentityEmblem userId={reply.user_id} size="sm" />
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-white text-sm font-medium">
+                  <span className="text-charcoal text-sm font-medium">
                     {reply.display_name || 'Anonymous'}
                   </span>
-                  <span className="text-gray-500 text-xs">·</span>
-                  <span className="text-gray-400 text-xs">
+                  <span className="text-mid text-xs">·</span>
+                  <span className="text-mid text-xs">
                     {formatTimeAgo(reply.created_at)}
                   </span>
                 </div>
-                <p className="text-gray-300 text-sm leading-relaxed">
+                <p className="text-charcoal text-sm leading-relaxed">
                   {reply.body}
                 </p>
               </div>
@@ -191,53 +191,44 @@ export default function CircleThread() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2C1810 0%, #1a1410 100%)' }}>
-        <p className="text-gray-400">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center pt-16">
+        <p className="text-mid">Loading...</p>
       </div>
     );
   }
 
   if (!forum) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #2C1810 0%, #1a1410 100%)' }}>
-        <p className="text-gray-400">Circle not found</p>
+      <div className="min-h-screen flex items-center justify-center pt-16">
+        <p className="text-mid">Circle not found</p>
       </div>
     );
   }
 
   return (
-    <div 
-      className="min-h-screen pt-20 pb-24 px-4"
-      style={{
-        background: 'linear-gradient(135deg, #2C1810 0%, #1a1410 100%)',
-        backgroundImage: `
-          linear-gradient(135deg, rgba(44, 24, 16, 0.95) 0%, rgba(26, 20, 16, 0.95) 100%),
-          url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
-        `
-      }}
-    >
+    <div className="min-h-screen pt-20 pb-24 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Link to="/circles" className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-200 mb-4 transition-colors">
+          <Link to="/circles" className="inline-flex items-center gap-2 text-mid hover:text-charcoal mb-4 transition-colors">
             <ArrowLeft size={16} />
             <span className="text-sm">Back to Circles</span>
           </Link>
           
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-serif text-white mb-2">{forum.name}</h1>
+              <h1 className="text-3xl font-serif text-charcoal mb-2">{forum.name}</h1>
               {forum.tags && forum.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {forum.tags.map(tag => (
-                    <span key={tag} className="px-3 py-1 rounded-full text-xs bg-black/30 text-gray-300 border border-white/10">
+                    <span key={tag} className="px-3 py-1 rounded-full text-xs bg-warm-white/60 text-charcoal border border-charcoal/10">
                       {tag}
                     </span>
                   ))}
                 </div>
               )}
             </div>
-            <div className="text-gray-400 text-sm">
+            <div className="text-mid text-sm">
               {forum.member_count || 0} members
             </div>
           </div>
@@ -249,28 +240,28 @@ export default function CircleThread() {
             value={text}
             onChange={handleTextChange}
             placeholder={`Share a reflection in ${forum.name}...`}
-            className="w-full h-32 bg-transparent text-white placeholder-gray-500 resize-none focus:outline-none"
+            className="w-full h-32 bg-transparent text-charcoal placeholder-mid/60 resize-none focus:outline-none"
           />
           
           {modResult && modResult.status !== 'approved' && (
             <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <p className="text-amber-300 text-sm">{modResult.message || 'Please review your message'}</p>
+              <p className="text-amber-700 text-sm">{modResult.message || 'Please review your message'}</p>
             </div>
           )}
 
           <div className="flex justify-between items-center mt-4">
-            <button className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-              <Mic size={20} className="text-gray-400" />
+            <button className="p-2 hover:bg-warm-white/50 rounded-lg transition-colors">
+              <Mic size={20} className="text-mid" />
             </button>
             <button
               onClick={handlePost}
               disabled={posting || !text.trim() || modResult?.status === 'blocked'}
-              className="px-6 py-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-600 text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-6 py-2 rounded-full bg-gradient-to-r from-accent to-accent-light text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {posting ? 'Posting...' : 'Post anonymously'}
             </button>
           </div>
-          <p className="text-xs text-gray-500 mt-2 text-center">
+          <p className="text-xs text-mid mt-2 text-center">
             You appear as {user?.display_name}. Your identity is never revealed.
           </p>
         </GlassCard>
@@ -279,7 +270,7 @@ export default function CircleThread() {
         <div>
           {posts.length === 0 && (
             <div className="text-center py-16">
-              <p className="text-gray-400">No posts yet. Be the first to share.</p>
+              <p className="text-mid">No posts yet. Be the first to share.</p>
             </div>
           )}
           {posts.map(post => (

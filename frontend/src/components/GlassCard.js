@@ -8,17 +8,17 @@ export default function GlassCard({ children, className = '', hover = false, onC
     <div
       onClick={onClick}
       className={`
-        backdrop-blur-xl bg-black/20
-        border border-white/10 
+        backdrop-blur-xl bg-white/40
+        border border-white/60 
         rounded-2xl 
-        shadow-2xl
-        ${hover ? 'hover:bg-black/30 hover:border-white/20 hover:shadow-3xl transition-all duration-300 cursor-pointer' : ''}
+        shadow-lg
+        ${hover ? 'hover:bg-white/50 hover:border-white/80 hover:shadow-xl transition-all duration-300 cursor-pointer' : ''}
         ${className}
       `}
       style={{
-        backdropFilter: 'blur(24px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        boxShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.08)'
       }}
     >
       {children}
