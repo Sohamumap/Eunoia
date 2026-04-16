@@ -70,6 +70,18 @@ class MoodCheckinRequest(BaseModel):
     intensity: int = 3  # 1-5
     note: Optional[str] = None
 
+class VoteRequest(BaseModel):
+    post_id: str
+    vote_type: str  # "upvote" | "downvote" | "unvote"
+
+class MessageCreate(BaseModel):
+    recipient_id: str
+    subject: str
+    body: str
+
+class MessageReply(BaseModel):
+    body: str
+
 # ============================================================
 # AUTH HELPERS
 # ============================================================
@@ -458,6 +470,65 @@ def check_moderation(text: str) -> dict:
     return result
 
 # ============================================================
+# REDDIT-STYLE HELPERS
+# ============================================================
+async def calculate_user_karma(user_id: str) -> dict:
+    """Calculate post and comment karma for a user"""
+    # Get all user's posts
+    posts = await db.reflections.find({"user_id": user_id, "parent_id": None}, {"_id": 0, "id": 1}).to_list(1000)
+    post_ids = [p["id"] for p in posts]
+    
+    # Get all votes on user's posts
+    post_votes = await db.votes.find({"post_id": {"$in": post_ids}}, {"_id": 0}).to_list(10000)
+    post_karma = sum(1 if v["vote_type"] == "upvote" else -1 for v in post_votes)
+    
+    # Get all user's comments
+    comments = await db.reflections.find({"user_id": user_id, "parent_id": {"$ne": None}}, {"_id": 0, "id": 1}).to_list(1000)
+    comment_ids = [c["id"] for c in comments]
+    
+    # Get all votes on user's comments
+    comment_votes = await db.votes.find({"post_id": {"$in": comment_ids}}, {"_id": 0}).to_list(10000)
+    comment_karma = sum(1 if v["vote_type"] == "upvote" else -1 for v in comment_votes)
+    
+    total_karma = post_karma + comment_karma
+    return {"post_karma": post_karma, "comment_karma": comment_karma, "total_karma": total_karma}
+
+async def get_post_vote_count(post_id: str) -> int:
+    """Get net vote count for a post"""
+    votes = await db.votes.find({"post_id": post_id}, {"_id": 0, "vote_type": 1}).to_list(10000)
+    upvotes = sum(1 for v in votes if v["vote_type"] == "upvote")
+    downvotes = sum(1 for v in votes if v["vote_type"] == "downvote")
+    return upvotes - downvotes
+
+async def calculate_hot_score(post: dict, vote_count: int) -> float:
+    """Calculate Reddit's 'hot' algorithm score"""
+    # Simple hot algorithm: vote_count / age_in_hours^1.5
+    created_at = datetime.fromisoformat(post["created_at"])
+    age_hours = (datetime.now(timezone.utc) - created_at).total_seconds() / 3600
+    age_hours = max(age_hours, 0.1)  # Avoid division by zero
+    return vote_count / (age_hours ** 1.5)
+
+async def enrich_posts_with_votes(posts: list, user_id: str = None) -> list:
+    """Add vote counts and user's vote status to posts"""
+    for post in posts:
+        # Get vote count
+        vote_count = await get_post_vote_count(post["id"])
+        post["vote_count"] = vote_count
+        
+        # Get user's vote if logged in
+        if user_id:
+            user_vote = await db.votes.find_one({"post_id": post["id"], "user_id": user_id}, {"_id": 0, "vote_type": 1})
+            post["user_vote"] = user_vote["vote_type"] if user_vote else None
+        else:
+            post["user_vote"] = None
+        
+        # Get reply count
+        reply_count = await db.reflections.count_documents({"parent_id": post["id"]})
+        post["reply_count"] = reply_count
+    
+    return posts
+
+# ============================================================
 # MODERATION ROUTES
 # ============================================================
 @api_router.post("/moderation/check")
@@ -491,36 +562,78 @@ async def get_forums():
     return {"forums": forums}
 
 @api_router.get("/forums/{forum_id}")
-async def get_forum(forum_id: str):
+async def get_forum(forum_id: str, sort: str = "hot", request: Request = None):
+    """Get forum with posts, sorted Reddit-style"""
+    # Get current user if authenticated
+    user = None
+    try:
+        user = await get_current_user(request)
+    except:
+        pass
+    
     forum = await db.forums.find_one({"id": forum_id}, {"_id": 0})
     if not forum:
         raise HTTPException(status_code=404, detail="Forum not found")
+    
+    # Get posts
     posts = await db.reflections.find(
         {"forum_id": forum_id, "parent_id": None, "moderation_status": {"$in": ["approved", "rewritten"]}},
         {"_id": 0}
-    ).sort("created_at", -1).to_list(100)
-    # Get replies for each post
+    ).to_list(1000)
+    
+    # Enrich posts with votes
+    posts = await enrich_posts_with_votes(posts, user["id"] if user else None)
+    
+    # Get replies for each post and enrich with votes
     for post in posts:
         replies = await db.reflections.find(
             {"parent_id": post["id"], "moderation_status": {"$in": ["approved", "rewritten"]}},
             {"_id": 0}
-        ).sort("created_at", 1).to_list(50)
+        ).sort("created_at", 1).to_list(100)
+        
+        # Enrich replies with votes
+        replies = await enrich_posts_with_votes(replies, user["id"] if user else None)
+        
         # Get display names for replies
         for reply in replies:
             reply_user = await db.users.find_one({"id": reply["user_id"]}, {"_id": 0, "display_name": 1})
-            if reply_user:
-                reply["display_name"] = reply_user["display_name"]
-            elif not reply.get("display_name"):
-                reply["display_name"] = "Anonymous"
+            reply["display_name"] = reply_user["display_name"] if reply_user else "Anonymous"
+        
         post["replies"] = replies
+        
+        # Get post user display name
         post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "display_name": 1})
-        if post_user:
-            post["display_name"] = post_user["display_name"]
-        elif not post.get("display_name"):
-            post["display_name"] = "Anonymous"
-    member_count = len(set([p["user_id"] for p in posts]))
-    forum["member_count"] = max(member_count, forum.get("seeded_members_count", 0))
-    return {"forum": forum, "posts": posts}
+        post["display_name"] = post_user["display_name"] if post_user else "Anonymous"
+    
+    # Sort posts
+    if sort == "new":
+        posts.sort(key=lambda p: p["created_at"], reverse=True)
+    elif sort == "top":
+        posts.sort(key=lambda p: p["vote_count"], reverse=True)
+    elif sort == "controversial":
+        for post in posts:
+            votes = await db.votes.find({"post_id": post["id"]}, {"_id": 0, "vote_type": 1}).to_list(10000)
+            upvotes = sum(1 for v in votes if v["vote_type"] == "upvote")
+            downvotes = sum(1 for v in votes if v["vote_type"] == "downvote")
+            controversy = min(upvotes, downvotes) if upvotes + downvotes > 0 else 0
+            post["controversy_score"] = controversy
+        posts.sort(key=lambda p: p.get("controversy_score", 0), reverse=True)
+    else:  # "hot" (default)
+        for post in posts:
+            post["hot_score"] = await calculate_hot_score(post, post["vote_count"])
+        posts.sort(key=lambda p: p.get("hot_score", 0), reverse=True)
+    
+    # Calculate member count
+    actual_members = await db.circle_members.count_documents({"forum_id": forum_id})
+    forum["member_count"] = max(actual_members, forum.get("seeded_members_count", 0))
+    
+    # Check if user has joined
+    is_joined = False
+    if user:
+        member = await db.circle_members.find_one({"forum_id": forum_id, "user_id": user["id"]})
+        is_joined = member is not None
+    
+    return {"forum": forum, "posts": posts[:100], "is_joined": is_joined, "sort": sort}
 
 @api_router.post("/forums/{forum_id}/posts")
 async def create_forum_post(forum_id: str, req: ReflectionCreate, request: Request):
@@ -562,39 +675,280 @@ async def create_forum_post(forum_id: str, req: ReflectionCreate, request: Reque
     return {"post": post, "moderation": mod_result, "posted": True}
 
 @api_router.get("/feed")
-async def get_social_feed():
-    """Unified social feed showing recent posts from all circles"""
+async def get_social_feed(sort: str = "hot", request: Request = None):
+    """Reddit-style unified feed with sorting (hot, new, top, controversial)"""
+    # Get current user if authenticated
+    user = None
+    try:
+        user = await get_current_user(request)
+    except:
+        pass
+    
     # Fetch all approved posts from all forums
     posts = await db.reflections.find(
         {"parent_id": None, "moderation_status": {"$in": ["approved", "rewritten"]}},
         {"_id": 0}
-    ).sort("created_at", -1).to_list(100)
+    ).to_list(1000)
     
-    # Enrich each post with user display name and forum info
+    # Enrich posts with votes and user info
+    posts = await enrich_posts_with_votes(posts, user["id"] if user else None)
+    
+    # Add user display name and forum info
     for post in posts:
-        # Get user display name
         post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "display_name": 1})
-        if post_user:
-            post["display_name"] = post_user["display_name"]
-        else:
-            post["display_name"] = "Anonymous"
+        post["display_name"] = post_user["display_name"] if post_user else "Anonymous"
         
-        # Get forum info
         if post.get("forum_id"):
             forum = await db.forums.find_one({"id": post["forum_id"]}, {"_id": 0, "name": 1, "tags": 1})
             if forum:
                 post["forum_name"] = forum["name"]
                 post["forum_tags"] = forum.get("tags", [])
-        
-        # Count replies
-        reply_count = await db.reflections.count_documents({"parent_id": post["id"]})
-        post["reply_count"] = reply_count
-        
-        # Initialize engagement metrics (these would come from a separate collection in production)
-        post["like_count"] = 0  # Placeholder for future implementation
-        post["is_liked"] = False  # Placeholder
     
-    return {"posts": posts}
+    # Sort posts based on sort parameter
+    if sort == "new":
+        posts.sort(key=lambda p: p["created_at"], reverse=True)
+    elif sort == "top":
+        posts.sort(key=lambda p: p["vote_count"], reverse=True)
+    elif sort == "controversial":
+        # Controversial = posts with similar upvotes and downvotes
+        for post in posts:
+            votes = await db.votes.find({"post_id": post["id"]}, {"_id": 0, "vote_type": 1}).to_list(10000)
+            upvotes = sum(1 for v in votes if v["vote_type"] == "upvote")
+            downvotes = sum(1 for v in votes if v["vote_type"] == "downvote")
+            controversy = min(upvotes, downvotes) if upvotes + downvotes > 0 else 0
+            post["controversy_score"] = controversy
+        posts.sort(key=lambda p: p.get("controversy_score", 0), reverse=True)
+    else:  # "hot" (default)
+        for post in posts:
+            post["hot_score"] = await calculate_hot_score(post, post["vote_count"])
+        posts.sort(key=lambda p: p.get("hot_score", 0), reverse=True)
+    
+    return {"posts": posts[:100], "sort": sort}  # Return top 100
+
+# ============================================================
+# REDDIT-STYLE VOTING SYSTEM
+# ============================================================
+@api_router.post("/vote")
+async def vote_on_post(req: VoteRequest, request: Request):
+    """Upvote, downvote, or unvote a post/comment"""
+    user = await get_current_user(request)
+    
+    # Check if post exists
+    post = await db.reflections.find_one({"id": req.post_id}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    # Find existing vote
+    existing_vote = await db.votes.find_one({"post_id": req.post_id, "user_id": user["id"]})
+    
+    if req.vote_type == "unvote":
+        # Remove vote
+        if existing_vote:
+            await db.votes.delete_one({"post_id": req.post_id, "user_id": user["id"]})
+        vote_count = await get_post_vote_count(req.post_id)
+        return {"success": True, "vote_type": None, "vote_count": vote_count}
+    
+    # Add or update vote
+    vote_id = existing_vote["id"] if existing_vote else str(uuid.uuid4())
+    vote_doc = {
+        "id": vote_id,
+        "post_id": req.post_id,
+        "user_id": user["id"],
+        "vote_type": req.vote_type,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if existing_vote:
+        await db.votes.update_one(
+            {"id": vote_id},
+            {"$set": vote_doc}
+        )
+    else:
+        await db.votes.insert_one({**vote_doc, "_id": vote_id})
+    
+    vote_count = await get_post_vote_count(req.post_id)
+    return {"success": True, "vote_type": req.vote_type, "vote_count": vote_count}
+
+# ============================================================
+# USER PROFILE & KARMA
+# ============================================================
+@api_router.get("/user/{user_id}/profile")
+async def get_user_profile(user_id: str):
+    """Get user profile with karma and post history (anonymous)"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "id": 1, "display_name": 1})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Calculate karma
+    karma = await calculate_user_karma(user_id)
+    
+    # Get user's posts
+    posts = await db.reflections.find(
+        {"user_id": user_id, "parent_id": None, "moderation_status": {"$in": ["approved", "rewritten"]}},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    # Enrich posts with votes
+    posts = await enrich_posts_with_votes(posts)
+    
+    # Add forum names
+    for post in posts:
+        if post.get("forum_id"):
+            forum = await db.forums.find_one({"id": post["forum_id"]}, {"_id": 0, "name": 1})
+            if forum:
+                post["forum_name"] = forum["name"]
+    
+    # Get user's comments
+    comments = await db.reflections.find(
+        {"user_id": user_id, "parent_id": {"$ne": None}, "moderation_status": {"$in": ["approved", "rewritten"]}},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    comments = await enrich_posts_with_votes(comments)
+    
+    return {
+        "user": {
+            "id": user["id"],
+            "display_name": user["display_name"],
+            "karma": karma
+        },
+        "posts": posts,
+        "comments": comments
+    }
+
+@api_router.get("/user/me/karma")
+async def get_my_karma(request: Request):
+    """Get current user's karma"""
+    user = await get_current_user(request)
+    karma = await calculate_user_karma(user["id"])
+    return karma
+
+# ============================================================
+# DIRECT MESSAGING SYSTEM
+# ============================================================
+@api_router.post("/messages")
+async def send_message(req: MessageCreate, request: Request):
+    """Send a direct message to another user"""
+    user = await get_current_user(request)
+    
+    # Check recipient exists
+    recipient = await db.users.find_one({"id": req.recipient_id}, {"_id": 0, "id": 1})
+    if not recipient:
+        raise HTTPException(status_code=404, detail="Recipient not found")
+    
+    message_id = str(uuid.uuid4())
+    message = {
+        "id": message_id,
+        "sender_id": user["id"],
+        "recipient_id": req.recipient_id,
+        "subject": req.subject,
+        "body": req.body,
+        "read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.messages.insert_one({**message, "_id": message_id})
+    return {"message": message, "success": True}
+
+@api_router.get("/messages/inbox")
+async def get_inbox(request: Request):
+    """Get user's inbox messages"""
+    user = await get_current_user(request)
+    
+    messages = await db.messages.find(
+        {"recipient_id": user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    # Enrich with sender display names
+    for msg in messages:
+        sender = await db.users.find_one({"id": msg["sender_id"]}, {"_id": 0, "display_name": 1})
+        msg["sender_display_name"] = sender["display_name"] if sender else "Anonymous"
+    
+    unread_count = sum(1 for m in messages if not m.get("read", False))
+    
+    return {"messages": messages, "unread_count": unread_count}
+
+@api_router.get("/messages/sent")
+async def get_sent_messages(request: Request):
+    """Get user's sent messages"""
+    user = await get_current_user(request)
+    
+    messages = await db.messages.find(
+        {"sender_id": user["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    # Enrich with recipient display names
+    for msg in messages:
+        recipient = await db.users.find_one({"id": msg["recipient_id"]}, {"_id": 0, "display_name": 1})
+        msg["recipient_display_name"] = recipient["display_name"] if recipient else "Anonymous"
+    
+    return {"messages": messages}
+
+@api_router.put("/messages/{message_id}/read")
+async def mark_message_read(message_id: str, request: Request):
+    """Mark a message as read"""
+    user = await get_current_user(request)
+    
+    result = await db.messages.update_one(
+        {"id": message_id, "recipient_id": user["id"]},
+        {"$set": {"read": True}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Message not found")
+    
+    return {"success": True}
+
+# ============================================================
+# JOIN/LEAVE CIRCLES
+# ============================================================
+@api_router.post("/forums/{forum_id}/join")
+async def join_circle(forum_id: str, request: Request):
+    """Join a circle"""
+    user = await get_current_user(request)
+    
+    forum = await db.forums.find_one({"id": forum_id}, {"_id": 0})
+    if not forum:
+        raise HTTPException(status_code=404, detail="Circle not found")
+    
+    # Check if already joined
+    existing = await db.circle_members.find_one({"forum_id": forum_id, "user_id": user["id"]})
+    if existing:
+        return {"success": True, "already_joined": True}
+    
+    member_id = str(uuid.uuid4())
+    await db.circle_members.insert_one({
+        "_id": member_id,
+        "id": member_id,
+        "forum_id": forum_id,
+        "user_id": user["id"],
+        "joined_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {"success": True, "already_joined": False}
+
+@api_router.post("/forums/{forum_id}/leave")
+async def leave_circle(forum_id: str, request: Request):
+    """Leave a circle"""
+    user = await get_current_user(request)
+    
+    result = await db.circle_members.delete_one({"forum_id": forum_id, "user_id": user["id"]})
+    
+    if result.deleted_count == 0:
+        return {"success": True, "was_member": False}
+    
+    return {"success": True, "was_member": True}
+
+@api_router.get("/forums/{forum_id}/is_joined")
+async def check_if_joined(forum_id: str, request: Request):
+    """Check if user has joined a circle"""
+    user = await get_current_user(request)
+    
+    member = await db.circle_members.find_one({"forum_id": forum_id, "user_id": user["id"]})
+    
+    return {"is_joined": member is not None}
 
 # ============================================================
 # REFLECTION / COMPANION ROUTES

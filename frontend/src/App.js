@@ -16,6 +16,8 @@ import CircleThread from '@/pages/CircleThread';
 import Companion from '@/pages/Companion';
 import DataSettings from '@/pages/DataSettings';
 import Home from '@/pages/Home';
+import UserProfile from '@/pages/UserProfile';
+import Inbox from '@/pages/Inbox';
 
 function AppLayout() {
   const location = useLocation();
@@ -35,6 +37,8 @@ function AppLayout() {
         <Route path="/hub" element={<ProtectedRoute><Hub /></ProtectedRoute>} />
         <Route path="/circles" element={<ProtectedRoute><Circles /></ProtectedRoute>} />
         <Route path="/circles/:id" element={<ProtectedRoute><CircleThread /></ProtectedRoute>} />
+        <Route path="/user/:userId" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+        <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
         <Route path="/companion" element={<ProtectedRoute><Companion /></ProtectedRoute>} />
         <Route path="/settings/data" element={<ProtectedRoute><DataSettings /></ProtectedRoute>} />
       </Routes>

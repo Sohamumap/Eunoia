@@ -1,15 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import CrisisModal from '@/components/CrisisModal';
-import { Heart, Home as HomeIcon, BookOpen, Users, Compass, User, Settings, LogOut, Menu, X } from 'lucide-react';
+import { Heart, Home as HomeIcon, BookOpen, Users, Compass, User, Settings, LogOut, Menu, X, Mail, Trophy } from 'lucide-react';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, api } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [showCrisis, setShowCrisis] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [karma, setKarma] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      // Fetch karma
+      api('get', '/user/me/karma').then(({ data }) => {
+        setKarma(data);
+      }).catch(() => {});
+
+      // Fetch unread message count
+      api('get', '/messages/inbox').then(({ data }) => {
+        setUnreadCount(data.unread_count || 0);
+      }).catch(() => {});
+    }
+  }, [user, api]);
 
   const isActive = (path) => location.pathname === path;
 
@@ -56,6 +72,32 @@ export default function Navbar() {
             )}
 
             <div className="flex items-center gap-3">
+              {user && karma && (
+                <Link
+                  to={`/user/${user.id}`}
+                  className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-sans text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                  title="Your karma"
+                >
+                  <Trophy size={14} className="text-orange-500" />
+                  <span className="font-bold">{karma.total_karma.toLocaleString()}</span>
+                </Link>
+              )}
+
+              {user && (
+                <Link
+                  to="/inbox"
+                  className="relative hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-sans text-gray-700 hover:bg-gray-100 transition-colors no-underline"
+                  title="Messages"
+                >
+                  <Mail size={16} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              )}
+
               <button
                 onClick={() => setShowCrisis(true)}
                 data-testid="get-help-now-btn"
