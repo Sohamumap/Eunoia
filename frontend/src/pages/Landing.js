@@ -70,6 +70,9 @@ export default function Landing() {
               See how it works
             </a>
           </div>
+          <p className="mt-4 font-sans text-sm text-mid animate-fade-up stagger-4">
+            Already have an account? <Link to="/signup" data-testid="cta-login" className="text-accent font-medium hover:underline no-underline">Sign in</Link>
+          </p>
         </div>
       </section>
 
