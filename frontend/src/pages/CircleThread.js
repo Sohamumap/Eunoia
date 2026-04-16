@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import CrisisModal from '@/components/CrisisModal';
+import SafetyReferralModal from '@/components/SafetyReferralModal';
 import GlassCard from '@/components/GlassCard';
 import IdentityEmblem from '@/components/IdentityEmblem';
 import ResonanceButtons from '@/components/ResonanceButtons';
-import { ArrowLeft, Send, Mic, Check, AlertTriangle, X } from 'lucide-react';
+import { ArrowLeft, Send, Mic, Check, AlertTriangle, Stethoscope, X } from 'lucide-react';
 
 const formatTimeAgo = (dateString) => {
   const now = new Date();
@@ -124,6 +125,8 @@ export default function CircleThread() {
   const [modResult, setModResult] = useState(null);
   const [posting, setPosting] = useState(false);
   const [showCrisis, setShowCrisis] = useState(false);
+  const [showReferral, setShowReferral] = useState(false);
+  const [referralInfo, setReferralInfo] = useState({ message: null, flaggedText: null });
   const modTimeout = useRef(null);
 
   // fetchForum depends on api and id only to avoid unnecessary refetches
@@ -155,6 +158,12 @@ export default function CircleThread() {
     }
   }, [api]);
 
+  const openReferral = (mod) => {
+    const firstFlag = mod?.flags?.[0]?.text || null;
+    setReferralInfo({ message: mod?.message, flaggedText: firstFlag });
+    setShowReferral(true);
+  };
+
   const handleTextChange = (e) => {
     const val = e.target.value;
     setText(val);
@@ -163,7 +172,10 @@ export default function CircleThread() {
   };
 
   const handlePost = async () => {
-    if (!text.trim() || modResult?.status === 'paused_crisis' || modResult?.status === 'blocked') return;
+    if (!text.trim()) return;
+    if (modResult?.status === 'paused_crisis') { setShowCrisis(true); return; }
+    if (modResult?.status === 'seeking_prescription') { openReferral(modResult); return; }
+    if (modResult?.status === 'blocked') return;
     setPosting(true);
     try {
       const { data } = await api('post', `/forums/${id}/posts`, { body: text, is_private: false });
@@ -173,6 +185,8 @@ export default function CircleThread() {
         setModResult(null);
       } else if (data.moderation?.status === 'paused_crisis') {
         setShowCrisis(true);
+      } else if (data.moderation?.status === 'seeking_prescription') {
+        openReferral(data.moderation);
       }
     } catch (err) {
       console.error(err);
@@ -243,7 +257,31 @@ export default function CircleThread() {
             className="w-full h-32 bg-transparent text-charcoal placeholder-mid/60 resize-none focus:outline-none"
           />
           
-          {modResult && modResult.status !== 'approved' && (
+          {modResult && modResult.status === 'seeking_prescription' && (
+            <div
+              className="mt-4 flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/25"
+              data-testid="circle-prescription-hint"
+            >
+              <Stethoscope size={18} className="text-rose flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-charcoal text-sm font-medium mb-0.5">
+                  For prescriptions, please speak to a physician.
+                </p>
+                <p className="text-mid text-xs leading-relaxed">
+                  Eunoia is peer support — it cannot recommend medicines, dosages, or diagnose. Please consult a licensed clinician.
+                </p>
+              </div>
+              <button
+                onClick={() => openReferral(modResult)}
+                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-charcoal text-white text-xs font-medium hover:-translate-y-[1px] transition-all"
+                data-testid="circle-prescription-learn-more"
+              >
+                Learn more
+              </button>
+            </div>
+          )}
+
+          {modResult && modResult.status !== 'approved' && modResult.status !== 'seeking_prescription' && modResult.status !== 'paused_crisis' && (
             <div className="mt-4 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
               <p className="text-amber-700 text-sm">{modResult.message || 'Please review your message'}</p>
             </div>
@@ -256,9 +294,17 @@ export default function CircleThread() {
             <button
               onClick={handlePost}
               disabled={posting || !text.trim() || modResult?.status === 'blocked'}
-              className="px-6 py-2 rounded-full bg-gradient-to-r from-accent to-accent-light text-white font-medium hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              className={`px-6 py-2 rounded-full font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                modResult?.status === 'seeking_prescription'
+                  ? 'bg-rose text-white hover:opacity-90'
+                  : 'bg-gradient-to-r from-accent to-accent-light text-white hover:opacity-90'
+              }`}
             >
-              {posting ? 'Posting...' : 'Post anonymously'}
+              {posting
+                ? 'Posting...'
+                : modResult?.status === 'seeking_prescription'
+                ? 'See a physician'
+                : 'Post anonymously'}
             </button>
           </div>
           <p className="text-xs text-mid mt-2 text-center">
@@ -280,6 +326,13 @@ export default function CircleThread() {
       </div>
 
       {showCrisis && <CrisisModal onClose={() => setShowCrisis(false)} />}
+      {showReferral && (
+        <SafetyReferralModal
+          onClose={() => setShowReferral(false)}
+          message={referralInfo.message}
+          flaggedText={referralInfo.flaggedText}
+        />
+      )}
     </div>
   );
 }

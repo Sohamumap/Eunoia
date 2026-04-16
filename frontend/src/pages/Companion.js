@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import CrisisModal from '@/components/CrisisModal';
-import { PenLine, Clock, FileText, ChevronRight } from 'lucide-react';
+import SafetyReferralModal from '@/components/SafetyReferralModal';
+import { PenLine, Clock, FileText, ChevronRight, Stethoscope } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
 export default function Companion() {
@@ -13,8 +14,12 @@ export default function Companion() {
   const [qualifyingCount, setQualifyingCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [showCrisis, setShowCrisis] = useState(false);
+  const [showReferral, setShowReferral] = useState(false);
+  const [referralInfo, setReferralInfo] = useState({ message: null, flaggedText: null });
+  const [liveMod, setLiveMod] = useState(null); // live moderation status for inline hint
   const [showSidebar, setShowSidebar] = useState(false);
   const textareaRef = useRef(null);
+  const modTimeout = useRef(null);
 
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
   const isQualifying = wordCount >= 100;
@@ -31,8 +36,36 @@ export default function Companion() {
 
   useEffect(() => { fetchReflections(); }, [fetchReflections]);
 
+  // Live moderation — debounced so user sees inline warning before saving
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const runLiveMod = useCallback(async (value) => {
+    if (value.trim().length < 5) { setLiveMod(null); return; }
+    try {
+      const { data } = await api('post', '/moderation/check', { text: value });
+      setLiveMod(data);
+    } catch (err) {
+      // Silent — live hint is best-effort
+    }
+  }, [api]);
+
+  const handleTextChange = (e) => {
+    const v = e.target.value;
+    setText(v);
+    clearTimeout(modTimeout.current);
+    modTimeout.current = setTimeout(() => runLiveMod(v), 600);
+  };
+
   const handleSave = async () => {
     if (wordCount < 10) return;
+
+    // Hard block on client side for known flagged states — shows modal immediately
+    if (liveMod?.status === 'seeking_prescription') {
+      const firstFlag = liveMod.flags?.[0]?.text || null;
+      setReferralInfo({ message: liveMod.message, flaggedText: firstFlag });
+      setShowReferral(true);
+      return;
+    }
+
     setSaving(true);
     try {
       const { data } = await api('post', '/reflections', { body: text, is_private: true });
@@ -41,7 +74,15 @@ export default function Companion() {
         setSaving(false);
         return;
       }
+      if (!data.saved && data.moderation?.status === 'seeking_prescription') {
+        const firstFlag = data.moderation.flags?.[0]?.text || null;
+        setReferralInfo({ message: data.moderation.message, flaggedText: firstFlag });
+        setShowReferral(true);
+        setSaving(false);
+        return;
+      }
       setText('');
+      setLiveMod(null);
       await fetchReflections();
 
       if (data.trigger_report) {
@@ -133,12 +174,42 @@ export default function Companion() {
               <textarea
                 ref={textareaRef}
                 value={text}
-                onChange={e => setText(e.target.value)}
+                onChange={handleTextChange}
                 placeholder="What is on your mind today? Write honestly. This is your private space."
                 data-testid="companion-textarea"
                 className="w-full h-full min-h-[300px] p-6 rounded-eunoia border border-eunoia-border bg-card-bg font-sans text-[15px] text-charcoal leading-relaxed resize-none focus:outline-none focus:border-accent/30 focus:shadow-eunoia transition-all placeholder:text-mid/30"
                 style={{ fontFamily: "'DM Sans', sans-serif" }}
               />
+
+              {/* Inline safety hint for prescription-seeking — shows BEFORE save */}
+              {liveMod?.status === 'seeking_prescription' && (
+                <div
+                  className="mt-3 flex items-start gap-3 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/25 animate-fade-up"
+                  data-testid="companion-prescription-hint"
+                >
+                  <Stethoscope size={18} className="text-rose flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="font-sans text-sm font-medium text-charcoal mb-0.5">
+                      For prescriptions, please consult a physician.
+                    </p>
+                    <p className="font-sans text-xs text-mid leading-relaxed">
+                      Eunoia is peer support — it cannot recommend medicines, dosages, or diagnose. You can
+                      still reflect on how you&rsquo;re feeling privately.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const firstFlag = liveMod.flags?.[0]?.text || null;
+                      setReferralInfo({ message: liveMod.message, flaggedText: firstFlag });
+                      setShowReferral(true);
+                    }}
+                    className="flex-shrink-0 px-3 py-1.5 rounded-full bg-charcoal text-white font-sans text-xs font-medium hover:-translate-y-[1px] transition-all"
+                    data-testid="companion-prescription-learn-more"
+                  >
+                    Learn more
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Footer controls */}
@@ -162,9 +233,13 @@ export default function Companion() {
                 onClick={handleSave}
                 disabled={saving || wordCount < 10}
                 data-testid="save-reflection-btn"
-                className="px-6 py-2.5 rounded-full bg-charcoal text-white font-sans text-sm font-medium hover:-translate-y-[1px] transition-all disabled:opacity-40 flex items-center gap-1.5"
+                className={`px-6 py-2.5 rounded-full font-sans text-sm font-medium transition-all disabled:opacity-40 flex items-center gap-1.5 ${
+                  liveMod?.status === 'seeking_prescription'
+                    ? 'bg-rose text-white hover:-translate-y-[1px]'
+                    : 'bg-charcoal text-white hover:-translate-y-[1px]'
+                }`}
               >
-                {saving ? 'Saving...' : 'Save reflection'}
+                {saving ? 'Saving...' : liveMod?.status === 'seeking_prescription' ? 'See a physician' : 'Save reflection'}
                 {!saving && <ChevronRight size={14} />}
               </button>
             </div>
@@ -173,6 +248,13 @@ export default function Companion() {
       </div>
 
       {showCrisis && <CrisisModal onClose={() => setShowCrisis(false)} />}
+      {showReferral && (
+        <SafetyReferralModal
+          onClose={() => setShowReferral(false)}
+          message={referralInfo.message}
+          flaggedText={referralInfo.flaggedText}
+        />
+      )}
 
       {/* Disclaimer */}
       <div className="fixed bottom-0 left-0 right-0 bg-warm-white/90 backdrop-blur-sm border-t border-eunoia-border py-2 px-4 text-center z-20">

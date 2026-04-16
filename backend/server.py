@@ -439,11 +439,57 @@ DIAGNOSTIC_PATTERNS = [
     r"\bi\s+think\s+you\s+(have|are)\s+(depressed|anxious|mentally\s+ill)\b"
 ]
 
+# Prescription-seeking patterns: user ASKING for medical/prescription advice from Eunoia.
+# Triggers a gentle physician-referral flow (no crisis, just guardrail).
+PRESCRIPTION_SEEKING_PATTERNS = [
+    # Direct prescription asks
+    r"\bprescrib\w*\b",
+    r"\bprescription\s+(for|of|please|pls)\b",
+    r"\bget\s+(a\s+)?prescription\b",
+    r"\bwrite\s+(me\s+)?a\s+prescription\b",
+
+    # "What / which medicine / medication / pill / drug / med should..."
+    r"\b(what|which|any|some)\s+(kind\s+of\s+)?(medicine|medication|medications|meds?|pill|pills|drug|drugs|tablet|tablets|antidepressant\w*|ssri|snri|benzo\w*|sleeping\s+pill\w*)\b",
+
+    # "Should / can / may / could I take ..."
+    r"\b(should|can|may|could|shall|do\s+i\s+need\s+to|ok\s+to|okay\s+to|safe\s+to)\s+i?\s*take\b",
+
+    # Dosage questions
+    r"\b(what|how)\s+(is\s+the\s+)?(right|correct|safe|proper|recommended)?\s*dos(age|e)\b",
+    r"\bhow\s+(much|many)\s+(mg|milligrams?|tablets?|pills?)\b",
+    r"\bwhat\s+dose\s+(of|should)\b",
+    r"\bis\s+\d+\s*mg\s+.{0,30}?(ok|okay|safe|too\s+much|enough|right|fine)\b",
+    r"\bis\s+\w+\s+safe\s+(for\s+me|to\s+take)\b",
+    r"\b\d+\s*mg\s+(of\s+\w+\s+)?(ok|okay|safe|fine|enough|too\s+much)\b",
+
+    # "Recommend / suggest a medicine ..."
+    r"\b(recommend|suggest|advise)\s+(me\s+)?(a\s+|an\s+|some\s+)?(medicine|medication|meds?|pill|drug|ssri|antidepressant|sleeping\s+pill)\w*\b",
+
+    # Self-diagnosis asks
+    r"\bdiagnose\s+me\b",
+    r"\bwhat\s+(do\s+i\s+have|is\s+wrong\s+with\s+me|disorder\s+do\s+i)\b",
+    r"\bdo\s+i\s+have\s+(depression|anxiety|ptsd|adhd|bipolar|ocd|bpd|insomnia)\b",
+    r"\bam\s+i\s+(depressed|bipolar|suffering\s+from)\b",
+
+    # Buying / procuring drugs
+    r"\b(buy|order|get|where\s+to\s+(buy|get))\s+(xanax|lorazepam|ativan|valium|diazepam|klonopin|clonazepam|zoloft|sertraline|prozac|fluoxetine|lexapro|escitalopram|paxil|paroxetine|ambien|zolpidem|trazodone|seroquel|quetiapine|adderall|ritalin|methylphenidate|modafinil|wellbutrin|bupropion|ssri\w*|benzo\w*|antidepressant\w*|sleeping\s+pill\w*)\b",
+
+    # "Stop taking / switch / increase" — clinical dosing decisions
+    r"\b(stop|quit|switch|increase|decrease|double|halve)\s+(my\s+)?(dose|dosage|meds?|medication|pills?)\b",
+]
+
+# Friendly referral message shown to user when prescription-seeking is detected.
+PRESCRIPTION_REFERRAL_MESSAGE = (
+    "Eunoia is a peer-support space, not a clinical service. For medicine, "
+    "prescriptions, dosages, or a formal diagnosis, please consult a licensed "
+    "physician or psychiatrist — they can review your history safely."
+)
+
 def check_moderation(text: str) -> dict:
     text_lower = text.lower()
-    result = {"status": "approved", "flags": [], "highlights": [], "suggestion": None}
+    result = {"status": "approved", "flags": [], "highlights": [], "suggestion": None, "message": None}
 
-    # Crisis check
+    # Crisis check (highest priority)
     for pattern in CRISIS_KEYWORDS:
         matches = re.finditer(pattern, text_lower)
         for m in matches:
@@ -454,7 +500,21 @@ def check_moderation(text: str) -> dict:
     if result["status"] == "paused_crisis":
         return result
 
-    # Medication check
+    # Prescription-seeking check (second priority — before peer medication advice check)
+    seeking_flags = []
+    for pattern in PRESCRIPTION_SEEKING_PATTERNS:
+        for m in re.finditer(pattern, text_lower):
+            seeking_flags.append({"type": "seeking_prescription", "text": m.group(), "start": m.start(), "end": m.end()})
+
+    if seeking_flags:
+        result["status"] = "seeking_prescription"
+        result["flags"].extend(seeking_flags)
+        for f in seeking_flags:
+            result["highlights"].append({"start": f["start"], "end": f["end"], "type": "seeking_prescription"})
+        result["message"] = PRESCRIPTION_REFERRAL_MESSAGE
+        return result
+
+    # Medication check (peer giving advice using medication names)
     has_medication = False
     for pattern in MEDICATION_PATTERNS:
         matches = re.finditer(pattern, text_lower)
@@ -667,6 +727,10 @@ async def create_forum_post(forum_id: str, req: ReflectionCreate, request: Reque
         })
         logger.warning(f"CRISIS GUARDRAIL: Blocked post from user {user['id']} - crisis content detected")
         return {"moderation": mod_result, "posted": False, "crisis_blocked": True}
+
+    if mod_result["status"] == "seeking_prescription":
+        logger.info(f"PHYSICIAN REFERRAL: Blocked post from user {user['id']} - prescription-seeking content")
+        return {"moderation": mod_result, "posted": False, "referral": "physician"}
 
     if mod_result["status"] == "blocked":
         return {"moderation": mod_result, "posted": False}
@@ -1025,6 +1089,8 @@ async def create_reflection(req: ReflectionCreate, request: Request):
     mod_result = check_moderation(req.body)
     if mod_result["status"] == "paused_crisis":
         return {"moderation": mod_result, "saved": False, "trigger_report": False}
+    if mod_result["status"] == "seeking_prescription":
+        return {"moderation": mod_result, "saved": False, "trigger_report": False, "referral": "physician"}
 
     reflection_id = str(uuid.uuid4())
     reflection = {

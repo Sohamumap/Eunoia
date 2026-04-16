@@ -103,19 +103,74 @@
 #====================================================================================================
 
 user_problem_statement: |
-  User has an existing Eunoia peer mental-health platform (React + FastAPI + MongoDB) with 9 pages.
-  They want: (a) make the app more detailed feature-wise, (b) improve UI/UX, (c) use the three provided
-  atmospheric background images (bg-glow-figure, bg-colorful-back, bg-dancer) as page backgrounds,
-  (d) take inspiration from reference images 4 & 5 (hexagonal branding diagram and soft pastel mosaic
-  card UI) for stacking UI elements. New feature additions required:
-  - Dashboard Home page with mosaic of cards
-  - Daily mood check-in widget (1-tap)
-  - Emotion tracking calendar (heatmap)
-  - Enhanced breathing orb
-  - Loading skeletons + smoother transitions
-  - Seed a demo account for quick preview (demo@eunoia.app)
+  User has an existing Eunoia peer mental-health platform (React + FastAPI + MongoDB).
+  NEW REQUEST (prescription-seeking guardrail): When a user writes a message in Companion (journal)
+  or Circles (forum) that asks for a medicine prescription, dosage, medication recommendation, or
+  self-diagnosis, the app should:
+  - Not accept/save the post
+  - Show a supportive message: "Eunoia is not a clinician — please consult a physician."
+  - Work without LLM (simulation-friendly, rule-based only)
+  - Keep the existing crisis guardrail (suicide/self-harm) untouched and still working
 
 backend:
+  - task: "Prescription-seeking moderation (new `seeking_prescription` status in check_moderation)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Added PRESCRIPTION_SEEKING_PATTERNS + PRESCRIPTION_REFERRAL_MESSAGE constants and a new
+          `seeking_prescription` status in check_moderation(). Ordering: crisis > seeking_prescription
+          > medication-advice > diagnostic. Response shape unchanged except adds `message` field.
+          Updated POST /reflections and POST /forums/{id}/posts to short-circuit on seeking_prescription
+          (saved=false, posted=false, referral='physician'). Crisis logic untouched.
+          Manual curl tests passed: "what medicine should I take" → seeking_prescription;
+          "prescribe me xanax" → seeking_prescription; "Is 50mg zoloft safe for me?" → seeking_prescription;
+          "diagnose me" → seeking_prescription; "I take 50mg zoloft daily helps me sleep" → needs_rewrite
+          (unchanged peer-medication-advice flow); "I want to end my life" → paused_crisis (unchanged);
+          normal reflection → approved.
+      - working: true
+        agent: "testing"
+        comment: |
+          ✅ PRESCRIPTION-SEEKING MODERATION FULLY WORKING - All test scenarios passed (4/4 test suites).
+          
+          **Moderation Check Endpoint (/api/moderation/check):**
+          - "What medicine should I take for my anxiety?" → seeking_prescription ✅
+          - "Can someone prescribe me xanax please?" → seeking_prescription ✅
+          - "Is 50mg of zoloft safe for me?" → seeking_prescription ✅
+          - "Diagnose me please" → seeking_prescription ✅
+          - "How many mg of ambien should I take?" → seeking_prescription ✅
+          - "Recommend me an antidepressant" → seeking_prescription ✅
+          - "Do I have depression?" → seeking_prescription ✅
+          - All cases return proper message field and seeking_prescription flags
+          
+          **Crisis Priority Maintained:**
+          - "I want to end my life" → paused_crisis ✅ (highest priority preserved)
+          
+          **No False Positives:**
+          - "Work has been overwhelming this week and I feel exhausted" → approved ✅
+          - "I take 50mg zoloft daily, it helps me sleep better" → needs_rewrite ✅ (peer-advice flow unchanged)
+          
+          **Reflections Endpoint (/api/reflections):**
+          - Prescription-seeking content: saved=false, referral="physician" ✅
+          - Normal content: saved=true ✅
+          - Verified no reflection saved when blocked ✅
+          
+          **Forum Posts Endpoint (/api/forums/{id}/posts):**
+          - Prescription-seeking: posted=false, referral="physician" ✅
+          - Crisis content: posted=false, crisis_blocked=true ✅
+          - Normal posts: posted=true ✅
+          
+          **Regression Tests:**
+          - All mood/dashboard endpoints still working ✅
+          
+          Feature is production-ready with proper guardrails and no regressions.
+
   - task: "Mood check-in API (POST /mood/checkin, GET /mood/today, GET /mood/calendar, GET /mood/meta)"
     implemented: true
     working: true
@@ -309,16 +364,27 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
-      Phase 1-4 complete. Backend: added mood check-in + dashboard summary endpoints; seeded demo user
-      demo@eunoia.app with 45 days mood history, 6 assessments, Wellness Profile, 5 reflections.
-      Frontend: full design system overhaul (soft-card tints, layered shadows, atmospheric bg per route
-      using user's 3 provided images with CSS var injection), new /home Dashboard page as image-5 inspired
-      mosaic, new MoodSelector/MoodCalendar/BreathingOrb/Skeleton components, Landing page redesigned
-      with dramatic glow-figure hero + 'Inside Eunoia' preview mosaic + 6 soft-card pillars. Applied
-      soft-card styling to all existing pages. Demo credentials saved to /app/memory/test_credentials.md.
+      NEW GUARDRAIL FEATURE: prescription-seeking detection. Added to check_moderation() in server.py.
+      New status `seeking_prescription` is returned (with friendly `message` field) when a user's text
+      matches patterns like: "what/which medicine/medication/pill/drug should I take", "prescribe",
+      "prescription for", "how many mg / dosage / dose", "is Xmg of Y safe", "is X safe for me",
+      "recommend a medication", "diagnose me", "do I have depression/anxiety/...", "buy xanax", etc.
+      Applied to POST /reflections, POST /forums/{id}/posts (returns saved=false/posted=false with
+      referral="physician") and POST /moderation/check (returns full result inline for live hints).
+      Crisis detection unchanged and still has top priority. No LLM dependency — pure regex rules,
+      works fully offline (prototype/simulation-ready).
 
-      Please test the new backend endpoints (/mood/*, /dashboard/summary) against the seeded demo user.
-      Use email demo@eunoia.app to log in (magic-link style: POST /auth/login with just email, returns JWT).
+      Please test the `seeking_prescription` status via POST /api/moderation/check and POST /api/reflections
+      and POST /api/forums/{id}/posts for the demo user (demo@eunoia.app). Scenarios to verify:
+      - "What medicine should I take for my anxiety?" → seeking_prescription
+      - "Can someone prescribe me xanax?" → seeking_prescription
+      - "Is 50mg zoloft safe for me?" → seeking_prescription
+      - "Diagnose me please" → seeking_prescription
+      - "I want to end my life" → paused_crisis (unchanged, highest priority)
+      - "Work has been overwhelming" → approved (no false positive)
+      - "I take 50mg zoloft daily, helps me sleep" → needs_rewrite (peer-advice flow, unchanged)
+      Also verify reflections/posts are NOT saved when status is seeking_prescription, and that
+      existing mood/dashboard/forum endpoints still work (regression).
   - agent: "testing"
     message: |
       ✅ BACKEND TESTING COMPLETE - All new endpoints working correctly!
@@ -344,3 +410,41 @@ agent_communication:
       5. **Regression Check** - Pre-existing endpoints (/forums, /hub/practices) still working
       
       All tests passed (7/7). Backend ready for frontend integration testing.
+  - agent: "testing"
+    message: |
+      ✅ PRESCRIPTION-SEEKING MODERATION TESTING COMPLETE - All guardrails working perfectly!
+      
+      **COMPREHENSIVE TEST RESULTS (4/4 test suites passed):**
+      
+      **1. Moderation Check Endpoint (/api/moderation/check):**
+      ✅ All prescription-seeking patterns correctly detected:
+      - "What medicine should I take for my anxiety?" → seeking_prescription
+      - "Can someone prescribe me xanax please?" → seeking_prescription  
+      - "Is 50mg of zoloft safe for me?" → seeking_prescription
+      - "Diagnose me please" → seeking_prescription
+      - "How many mg of ambien should I take?" → seeking_prescription
+      - "Recommend me an antidepressant" → seeking_prescription
+      - "Do I have depression?" → seeking_prescription
+      ✅ All cases return proper message field and seeking_prescription flags
+      
+      **2. Crisis Priority Maintained:**
+      ✅ "I want to end my life" → paused_crisis (highest priority preserved)
+      
+      **3. No False Positives:**
+      ✅ "Work has been overwhelming this week and I feel exhausted" → approved
+      ✅ "I take 50mg zoloft daily, it helps me sleep better" → needs_rewrite (peer-advice flow unchanged)
+      
+      **4. Reflections Endpoint (/api/reflections):**
+      ✅ Prescription-seeking content: saved=false, referral="physician"
+      ✅ Normal content: saved=true
+      ✅ Verified no reflection saved when blocked
+      
+      **5. Forum Posts Endpoint (/api/forums/{id}/posts):**
+      ✅ Prescription-seeking: posted=false, referral="physician"
+      ✅ Crisis content: posted=false, crisis_blocked=true
+      ✅ Normal posts: posted=true
+      
+      **6. Regression Tests:**
+      ✅ All mood/dashboard endpoints still working
+      
+      **FEATURE STATUS: PRODUCTION READY** - All guardrails working with proper physician referrals and no regressions.
