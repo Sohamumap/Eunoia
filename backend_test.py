@@ -10,7 +10,7 @@ import sys
 from datetime import datetime, timezone, timedelta
 
 # Configuration
-BASE_URL = "https://ui-design-studio-2.preview.emergentagent.com/api"
+BASE_URL = "https://proto-feature-fix.preview.emergentagent.com/api"
 DEMO_EMAIL = "demo@eunoia.app"
 
 class EunoiaAPITester:
