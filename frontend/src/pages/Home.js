@@ -2,8 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import SoftCard from '@/components/SoftCard';
-import MoodSelector, { MOODS } from '@/components/MoodSelector';
+import { MOODS } from '@/components/MoodSelector';
 import MoodCalendar from '@/components/MoodCalendar';
+import BurnoutTracker from '@/components/BurnoutTracker';
 import { SkeletonCard, SkeletonLine } from '@/components/Skeleton';
 import { Wind, ArrowUpRight, Users, Flame, BookOpen, Shield, Sparkles, Moon, Activity } from 'lucide-react';
 
@@ -129,21 +130,25 @@ export default function Home() {
         {/* Mosaic grid - Orchestrated staggered reveal */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
 
-          {/* MOOD CHECK-IN — hero tile, sunset tint */}
+          {/* BURNOUT TRACKER — hero tile, weekly trend (Sun → Sat) */}
           <SoftCard
             tint="sunset"
-            className="md:col-span-3 md:row-span-2 relative overflow-hidden animate-scale-in stagger-1 hover-lift"
-            padding="p-8"
-            data-testid="tile-mood-checkin"
+            className="md:col-span-3 md:row-span-2 relative overflow-hidden animate-scale-in stagger-1 hover-lift flex flex-col"
+            padding="p-7"
+            data-testid="tile-burnout-tracker"
           >
-            {/* Decorative blur orb */}
-            <div className="absolute -top-12 -right-12 w-56 h-56 rounded-full animate-slow-pulse" style={{
-              background: 'radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(245,166,35,0.4) 40%, transparent 75%)',
-              filter: 'blur(6px)',
+            {/* Decorative blobs — reference-style warm gradient atmosphere */}
+            <div className="absolute -top-16 -right-10 w-64 h-64 rounded-full animate-slow-pulse pointer-events-none" style={{
+              position: 'absolute',
+              background: 'radial-gradient(circle, rgba(232,168,76,0.55) 0%, rgba(245,166,35,0.25) 45%, transparent 75%)',
+              filter: 'blur(14px)',
             }} />
-            <div className="relative z-10">
-              <MoodSelector onSaved={fetchSummary} />
-            </div>
+            <div className="absolute -bottom-20 -left-8 w-56 h-56 rounded-full pointer-events-none" style={{
+              position: 'absolute',
+              background: 'radial-gradient(circle, rgba(192,114,106,0.35) 0%, rgba(212,146,90,0.15) 50%, transparent 80%)',
+              filter: 'blur(18px)',
+            }} />
+            <BurnoutTracker />
           </SoftCard>
 
           {/* STATE SNAPSHOT — control-panel style */}

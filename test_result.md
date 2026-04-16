@@ -113,6 +113,66 @@ user_problem_statement: |
   - Keep the existing crisis guardrail (suicide/self-harm) untouched and still working
 
 backend:
+  - task: "Burnout Tracker weekly endpoint (GET /api/burnout/weekly, Sun → Sat)"
+    implemented: true
+    working: true
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Added GET /api/burnout/weekly. Returns 7 data points for the CURRENT week anchored to Sunday
+          (day_labels Sun..Sat) with burnout score 0-100 per day, plus previous_days (7 points), averages,
+          trend (up/down/flat), delta vs previous week, latest_score, category (low/moderate/elevated/high),
+          and baseline_from_assessment (user's most recent MBI burnout_score).
+
+          Score derivation: _mood_to_burnout(mood_value, intensity) → (6 - value) * 20 ± intensity nudge.
+          MOOD_META mapping used: radiant=5→20, steady=4→40, tender=3→60, heavy=2→80, depleted=1→100.
+
+          Gap-filling: past-week missing days are interpolated from last known score; future days are null.
+          Requires Authorization: Bearer <JWT>. Curl-tested against demo@eunoia.app — returned 7 days
+          (Sun 60, Mon 76, Tue 92, Wed 60, Thu 40, Fri/Sat null/future), current_avg=66, previous_avg=49,
+          trend='up', delta=17, category='moderate', baseline=72.
+      - working: true
+        agent: "testing"
+        comment: |
+          ✅ BURNOUT TRACKER WEEKLY ENDPOINT FULLY WORKING - All test scenarios passed (3/3 test suites).
+          
+          **Comprehensive Response Structure Validation:**
+          - All required fields present: week_start, week_end, today_index, days, previous_days, current_avg, previous_avg, latest_score, latest_day, delta, trend, category, baseline_from_assessment ✅
+          - week_start correctly anchored to Sunday (2026-04-12, weekday=6) ✅
+          - days array: exactly 7 items with proper structure (date, day, day_index, score, has_data, mood, is_future, display_score) ✅
+          - previous_days array: exactly 7 items without display_score field ✅
+          - Day labels correct: Sun→Mon→Tue→Wed→Thu→Fri→Sat ✅
+          - Day indices correct: 0→1→2→3→4→5→6 ✅
+          - Consecutive dates validated ✅
+          - Score ranges validated: all scores 0-100 ✅
+          
+          **Trend Analysis Validation:**
+          - Trend logic correct: delta +17 → trend "up" ✅
+          - Category classification: latest_score 40 → "moderate" ✅
+          - Valid trend values: "up"/"down"/"flat" ✅
+          - Valid category values: "low"/"moderate"/"elevated"/"high"/"unknown" ✅
+          
+          **Demo User Data Validation:**
+          - Current week avg: 66, Previous week avg: 49 (both non-null as expected) ✅
+          - Latest score: 40/100 (Thu) ✅
+          - today_index: 4 (Thursday, within 0-6 range) ✅
+          - Baseline from assessment: present ✅
+          
+          **Auth Enforcement:**
+          - GET /api/burnout/weekly without auth → 401 Unauthorized ✅
+          
+          **Regression Tests:**
+          - GET /api/mood/today → 200 ✅
+          - GET /api/dashboard/summary → 200 ✅
+          - POST /api/moderation/check with prescription-seeking text → seeking_prescription status ✅
+          
+          **FEATURE STATUS: PRODUCTION READY** - All response structure requirements met, proper auth enforcement, no regressions.
+
   - task: "Prescription-seeking moderation (new `seeking_prescription` status in check_moderation)"
     implemented: true
     working: true
@@ -217,6 +277,28 @@ backend:
         comment: "✅ Demo user seeding verified working. Login with demo@eunoia.app successful, returns user with display_name='Resident_2580', role='resident', onboarded=true. Rich sample data confirmed: 6 assessments, 5 reflections, Wellness Profile with archetype 'The Over-Committed Healer', 40 days mood history with avg 3.02, streak=9. Seeding is idempotent and runs on startup."
 
 frontend:
+  - task: "Burnout Tracker dashboard tile (BurnoutTracker component, replaces mood check-in on /home)"
+    implemented: true
+    working: true
+    file: "frontend/src/components/BurnoutTracker.js, frontend/src/pages/Home.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Created BurnoutTracker component — hero tile with warm gradient AreaChart (recharts). Shows:
+          latest score + /100, category pill (low/moderate/elevated/high with matched color), week-over-week
+          trend pill (↑/↓/→ with delta), 7-day Sun→Sat chart (interpolated curve, today marked with
+          highlighted dot, custom charcoal tooltip), footer with legend + avg vs last week, supportive
+          caption based on trend. Decorative radial blobs in sunset tint atop the SoftCard for the
+          reference-style warm "blob" aesthetic. Reference image from user drove the gradient palette
+          (orange → rose). Swapped into Home.js — mood check-in tile is gone, burnout tile takes its
+          place in the same md:col-span-3 md:row-span-2 slot. Verified visually via Playwright — layout
+          fills the 2-row card cleanly; data rendered correctly for demo user (40/100, Moderate, +17 vs
+          last wk, chart shows Sun60→Mon76→Tue92→Wed60→Thu40, Fri/Sat as future).
+
   - task: "SafetyReferralModal + Companion/CircleThread prescription-seeking guardrail UI"
     implemented: true
     working: true
@@ -468,3 +550,41 @@ agent_communication:
       ✅ All mood/dashboard endpoints still working
       
       **FEATURE STATUS: PRODUCTION READY** - All guardrails working with proper physician referrals and no regressions.
+  - agent: "testing"
+    message: |
+      ✅ BURNOUT TRACKER WEEKLY ENDPOINT TESTING COMPLETE - All requirements met!
+      
+      **COMPREHENSIVE TEST RESULTS (3/3 test suites passed):**
+      
+      **1. GET /api/burnout/weekly Response Structure:**
+      ✅ All required fields present and correctly formatted:
+      - week_start: "2026-04-12" (Sunday, weekday=6) ✅
+      - week_end: "2026-04-18" (Saturday) ✅
+      - today_index: 4 (Thursday, within 0-6 range) ✅
+      - days: Array of 7 items with complete structure ✅
+      - previous_days: Array of 7 items (no display_score field) ✅
+      - current_avg: 66, previous_avg: 49 (both non-null for demo user) ✅
+      - latest_score: 40, latest_day: "Thu" ✅
+      - delta: +17, trend: "up" (consistent logic) ✅
+      - category: "moderate" (correct for score 40) ✅
+      - baseline_from_assessment: present ✅
+      
+      **2. Data Validation:**
+      ✅ Week anchored to Sunday (2026-04-12)
+      ✅ Consecutive dates in days array
+      ✅ Day labels: Sun→Mon→Tue→Wed→Thu→Fri→Sat
+      ✅ Day indices: 0→1→2→3→4→5→6
+      ✅ Score ranges: all values 0-100
+      ✅ Trend logic: delta ≥3 → "up", ≤-3 → "down", else "flat"
+      ✅ Category logic: <30="low", <55="moderate", <75="elevated", ≥75="high"
+      ✅ Demo user has rich data: 40 days mood history, both averages non-null
+      
+      **3. Auth Enforcement:**
+      ✅ GET /api/burnout/weekly without auth → 401 Unauthorized
+      
+      **4. Regression Tests:**
+      ✅ GET /api/mood/today → 200
+      ✅ GET /api/dashboard/summary → 200  
+      ✅ POST /api/moderation/check → seeking_prescription (previous feature intact)
+      
+      **FEATURE STATUS: PRODUCTION READY** - Burnout tracker endpoint meets all specification requirements with proper auth and no regressions.

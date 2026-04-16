@@ -14,7 +14,7 @@ import re
 import uuid
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date
 import jwt as pyjwt
 import secrets
 import random  # Only for non-security-sensitive operations
@@ -1497,6 +1497,150 @@ async def mood_calendar(request: Request, days: int = 90):
         "days": out, "logged_count": len(entries), "avg_value": avg, "streak": streak,
         "total_days": days
     }
+
+# ============================================================
+# BURNOUT TRACKER — weekly trend (Sun → Sat)
+# ============================================================
+def _mood_to_burnout(mood_value: int, intensity: int = 3) -> int:
+    """
+    Convert a mood entry (MOOD_META.value 1-5, intensity 1-5) into a burnout score 0-100.
+    Lower mood value = higher burnout. Intensity amplifies the signal slightly.
+    """
+    if not mood_value:
+        return None
+    base = (6 - mood_value) * 20  # depleted(1)→100, radiant(5)→20
+    # Intensity nudge: for heavy/depleted moods, strong intensity raises; for radiant, it lowers.
+    if mood_value <= 2:
+        base = min(100, base + (intensity - 3) * 4)
+    elif mood_value >= 4:
+        base = max(0, base - (intensity - 3) * 4)
+    return int(round(base))
+
+def _most_recent_sunday(today: date) -> date:
+    # weekday(): Monday=0 ... Sunday=6. We want the Sunday that starts this week.
+    offset = (today.weekday() + 1) % 7  # distance back to Sunday (0 if today is Sunday)
+    return today - timedelta(days=offset)
+
+@api_router.get("/burnout/weekly")
+async def burnout_weekly(request: Request):
+    """
+    Returns 7-day burnout trend (Sunday → Saturday) for the CURRENT week,
+    plus previous week average for comparison. Burnout 0-100 (higher = worse).
+    Derived from mood_entries; falls back to user's MBI profile burnout_score when sparse.
+    """
+    user = await get_current_user(request)
+    uid = user["id"]
+    today = datetime.now(timezone.utc).date()
+    this_sun = _most_recent_sunday(today)
+    prev_sun = this_sun - timedelta(days=7)
+
+    # Fetch 14 days of mood entries
+    cutoff = prev_sun.isoformat()
+    end = (this_sun + timedelta(days=6)).isoformat()
+    entries = await db.mood_entries.find(
+        {"user_id": uid, "date": {"$gte": cutoff, "$lte": end}}, {"_id": 0}
+    ).to_list(30)
+    by_date = {e["date"]: e for e in entries}
+
+    # Baseline from most recent wellness profile (optional)
+    profiles = await db.wellness_profiles.find({"user_id": uid}, {"_id": 0}).sort("generated_at", -1).to_list(1)
+    baseline = profiles[0]["burnout_score"] if profiles else None
+
+    day_labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+    def _build_week(start: date):
+        out = []
+        for i in range(7):
+            d = start + timedelta(days=i)
+            e = by_date.get(d.isoformat())
+            mood_val = MOOD_META[e["mood"]]["value"] if e and e.get("mood") in MOOD_META else None
+            intensity = e.get("intensity") if e else 3
+            score = _mood_to_burnout(mood_val, intensity) if mood_val is not None else None
+            out.append({
+                "date": d.isoformat(),
+                "day": day_labels[i],
+                "day_index": i,
+                "score": score,
+                "has_data": score is not None,
+                "mood": e["mood"] if e else None,
+                "is_future": d > today,
+            })
+        return out
+
+    current = _build_week(this_sun)
+    previous = _build_week(prev_sun)
+
+    # Fill gaps in current week with interpolation or baseline
+    current_scores = [d["score"] for d in current if d["score"] is not None]
+    prev_scores = [d["score"] for d in previous if d["score"] is not None]
+    fallback = (
+        round(sum(current_scores) / len(current_scores)) if current_scores
+        else (baseline if baseline is not None
+              else (round(sum(prev_scores) / len(prev_scores)) if prev_scores else 50))
+    )
+    # Interpolate missing (only for past days, not future)
+    last_known = None
+    for d in current:
+        if d["is_future"]:
+            d["display_score"] = None
+        elif d["score"] is not None:
+            d["display_score"] = d["score"]
+            last_known = d["score"]
+        else:
+            d["display_score"] = last_known if last_known is not None else fallback
+
+    current_avg = round(sum(current_scores) / len(current_scores)) if current_scores else fallback
+    previous_avg = round(sum(prev_scores) / len(prev_scores)) if prev_scores else None
+
+    # Trend
+    if previous_avg is None or not current_scores:
+        trend = "flat"
+        delta = 0
+    else:
+        delta = current_avg - previous_avg
+        if abs(delta) < 3:
+            trend = "flat"
+        elif delta > 0:
+            trend = "up"   # burnout getting worse
+        else:
+            trend = "down"  # burnout improving
+
+    # Latest score (most recent day with data)
+    latest_score = None
+    latest_day = None
+    for d in reversed(current):
+        if d["score"] is not None:
+            latest_score = d["score"]
+            latest_day = d["day"]
+            break
+    if latest_score is None and previous_avg is not None:
+        latest_score = previous_avg
+        latest_day = "last week"
+
+    # Category
+    def _cat(s):
+        if s is None: return "unknown"
+        if s < 30: return "low"
+        if s < 55: return "moderate"
+        if s < 75: return "elevated"
+        return "high"
+
+    return {
+        "week_start": this_sun.isoformat(),
+        "week_end": (this_sun + timedelta(days=6)).isoformat(),
+        "today_index": (today - this_sun).days if this_sun <= today <= this_sun + timedelta(days=6) else None,
+        "days": current,
+        "previous_days": previous,
+        "current_avg": current_avg,
+        "previous_avg": previous_avg,
+        "latest_score": latest_score,
+        "latest_day": latest_day,
+        "delta": delta,
+        "trend": trend,
+        "category": _cat(latest_score),
+        "baseline_from_assessment": baseline,
+    }
+
 
 # ============================================================
 # DASHBOARD AGGREGATE
