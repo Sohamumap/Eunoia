@@ -286,37 +286,12 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero — Split layout with strong visual + Diagonal emphasis */}
+      {/* Hero — Clean layout with single background */}
       <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
-        {/* Prominent image right with soft diagonal mask */}
-        <div
-          className="absolute top-0 right-0 w-full lg:w-[65%] h-full pointer-events-none"
-          style={{
-            backgroundImage: 'url(/assets/bg-glow-figure.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: 0.90,
-            maskImage: 'linear-gradient(130deg, transparent 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0.7) 45%, rgba(0,0,0,1) 65%)',
-            WebkitMaskImage: 'linear-gradient(130deg, transparent 0%, rgba(0,0,0,0.3) 25%, rgba(0,0,0,0.7) 45%, rgba(0,0,0,1) 65%)',
-          }}
-        />
-        {/* Dancer subtle on left bottom */}
-        <div
-          className="absolute bottom-0 left-0 w-[45%] h-[55%] pointer-events-none hidden lg:block"
-          style={{
-            backgroundImage: 'url(/assets/bg-dancer.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: 0.24,
-            maskImage: 'radial-gradient(ellipse at 18% 82%, rgba(0,0,0,0.75) 0%, transparent 70%)',
-            WebkitMaskImage: 'radial-gradient(ellipse at 18% 82%, rgba(0,0,0,0.75) 0%, transparent 70%)',
-          }}
-        />
-
         <div className="max-w-6xl mx-auto px-6 w-full relative z-10">
           <div className="max-w-2xl">
             <p className="font-sans text-[10px] tracking-[0.20em] uppercase text-mid mb-7 animate-fade-up font-bold" data-testid="hero-overline">
-              PEER SUPPORT &middot; NOT AI THERAPY
+              MENTAL HEALTH QUANTIFIED
             </p>
             <h1 className="font-serif text-6xl sm:text-7xl lg:text-8xl font-bold text-charcoal mb-7 animate-fade-up stagger-1 leading-[1.0]">
               Support, not<br />

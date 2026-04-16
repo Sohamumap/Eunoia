@@ -33,7 +33,11 @@ export default function Logo({
     <img 
       src="/assets/logo/eunoia-logo.jpg" 
       alt="Eunoia"
-      style={style}
+      style={{
+        ...style,
+        mixBlendMode: 'multiply', // Remove white background
+        filter: 'contrast(1.1) brightness(1.05)'
+      }}
       className={`object-contain ${className}`}
     />
   ) : (
@@ -43,7 +47,11 @@ export default function Logo({
       muted
       playsInline
       onError={() => setVideoError(true)}
-      style={style}
+      style={{
+        ...style,
+        mixBlendMode: 'multiply', // Remove white background
+        filter: 'contrast(1.1) brightness(1.05)'
+      }}
       className={`object-contain ${className}`}
       aria-label="Eunoia"
     >
@@ -52,7 +60,10 @@ export default function Logo({
       <img 
         src="/assets/logo/eunoia-logo.jpg" 
         alt="Eunoia"
-        style={style}
+        style={{
+          ...style,
+          mixBlendMode: 'multiply'
+        }}
       />
     </video>
   );
