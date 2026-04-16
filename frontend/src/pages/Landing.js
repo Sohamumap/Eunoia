@@ -129,8 +129,8 @@ export default function Landing() {
 
         <div className="max-w-6xl mx-auto px-6 w-full relative z-10">
           <div className="max-w-2xl">
-            <p className="font-sans text-[11px] tracking-[0.12em] uppercase text-mid mb-6 animate-fade-up" data-testid="hero-overline">
-              Peer support &middot; Not AI therapy
+            <p className="font-sans text-[11px] tracking-[0.12em] uppercase text-mid mb-6 animate-fade-up" data-testid="hero-overline" style={{ textTransform: 'uppercase' }}>
+              PEER SUPPORT &middot; NOT AI THERAPY
             </p>
             <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold text-charcoal mb-6 animate-fade-up stagger-1 leading-[1.08]">
               Support, not<br />
