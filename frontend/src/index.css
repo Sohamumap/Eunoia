@@ -1,14 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
+  /* Base palette */
   --cream: #F8F5F0;
   --warm-white: #FDFCFA;
   --charcoal: #1C1C1E;
   --mid: #6B6B70;
+  --soft: #9A9AA0;
   --accent: #C17B2F;
   --accent-light: #E8A84C;
   --green: #4A7C59;
@@ -17,14 +19,32 @@
   --lavender: #7B6FA5;
   --card-bg: #FFFFFF;
   --border: #E8E4DE;
-  --shadow: 0 2px 20px rgba(0,0,0,0.07);
-  --radius: 18px;
-  --atmo-orange: rgba(215, 120, 70, 0.18);
-  --atmo-lavender: rgba(140, 120, 185, 0.15);
-  --atmo-peach: rgba(230, 170, 130, 0.12);
+  --border-soft: #F0ECE5;
+
+  /* Soft pastel card tints (image-5 inspired) */
+  --tint-peach: #FDE8DC;
+  --tint-rose: #F7DDE0;
+  --tint-sage: #DDE7DA;
+  --tint-lavender: #E4DFEE;
+  --tint-cream: #F4ECDF;
+  --tint-sky: #DEE6ED;
+  --tint-sunset: #F9D7BE;
+
+  /* Soft-card layered shadow (neumorphic-ish) */
+  --shadow-sm: 0 1px 2px rgba(28,28,30,0.04);
+  --shadow-card: 0 1px 2px rgba(28,28,30,0.03), 0 10px 30px -12px rgba(28,28,30,0.12), inset 0 1px 0 rgba(255,255,255,0.55);
+  --shadow-card-hover: 0 2px 4px rgba(28,28,30,0.04), 0 18px 40px -14px rgba(28,28,30,0.18), inset 0 1px 0 rgba(255,255,255,0.6);
+  --shadow-glow-orange: 0 0 60px -10px rgba(232,168,76,0.35);
+  --shadow-glow-lavender: 0 0 60px -10px rgba(123,111,165,0.3);
+
+  --radius: 22px;
+  --radius-sm: 14px;
+  --radius-lg: 28px;
 }
 
 * { box-sizing: border-box; }
+
+html, body { overscroll-behavior: none; }
 
 body {
   margin: 0;
@@ -37,121 +57,257 @@ body {
   line-height: 1.6;
 }
 
-/* Atmospheric background layer */
+/* ------------------------------------------------------------
+   ATMOSPHERIC BACKGROUND LAYERS
+   Each route gets: (1) gradient color wash (back) + (2) image bleed (front-ish, masked)
+   ------------------------------------------------------------ */
+
+/* Base gradient layer (always on) */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background-size: cover;
-  background-position: center top;
-  opacity: 0.10;
   z-index: 0;
   pointer-events: none;
-  will-change: opacity;
-  transition: background-image 0.8s ease, opacity 0.8s ease;
-  background-image:
-    radial-gradient(ellipse at 70% 30%, var(--atmo-orange) 0%, transparent 60%),
-    radial-gradient(ellipse at 30% 70%, var(--atmo-lavender) 0%, transparent 55%),
-    radial-gradient(ellipse at 50% 50%, var(--atmo-peach) 0%, transparent 70%);
+  transition: background 1.2s ease, opacity 1.2s ease;
 }
 
-/* Page-specific atmospheric backgrounds - use gradient fallbacks */
-/* Images are applied via React components with inline styles */
+/* Image bleed layer */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: saturate(1.08) contrast(1.02);
+  opacity: 0;
+  transition: opacity 1.2s ease, background-image 0.8s ease;
+}
+
+/* LANDING — glow figure, warm */
 body.atmo-landing::before {
-  background: radial-gradient(ellipse at 70% 30%, var(--atmo-orange) 0%, transparent 60%), radial-gradient(ellipse at 30% 70%, var(--atmo-lavender) 0%, transparent 55%);
-  opacity: 0.35;
+  background:
+    radial-gradient(ellipse 80% 60% at 80% 20%, rgba(232,168,76,0.20) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 60% at 20% 80%, rgba(123,111,165,0.16) 0%, transparent 55%),
+    linear-gradient(180deg, var(--warm-white) 0%, var(--cream) 100%);
 }
-body.atmo-circles::before {
-  background: radial-gradient(ellipse at 50% 20%, rgba(30,30,32,0.08) 0%, transparent 50%), radial-gradient(ellipse at 60% 60%, var(--atmo-orange) 0%, transparent 60%);
-  opacity: 0.25;
-}
-body.atmo-profile::before {
-  background: radial-gradient(ellipse at 40% 40%, var(--atmo-lavender) 0%, transparent 50%), radial-gradient(ellipse at 60% 60%, var(--atmo-orange) 0%, transparent 55%);
-  opacity: 0.30;
-}
-body.atmo-profile.revealing::before { opacity: 0.50; transition: opacity 1.2s ease; }
-body.atmo-profile.revealed::before { opacity: 0.25; transition: opacity 0.8s ease; }
-body.atmo-companion::before {
-  background: radial-gradient(ellipse at 70% 30%, var(--atmo-peach) 0%, transparent 60%), radial-gradient(ellipse at 30% 70%, var(--atmo-lavender) 0%, transparent 55%);
-  opacity: 0.20;
-}
-body.atmo-assessment::before {
-  background: radial-gradient(ellipse at 50% 50%, var(--atmo-lavender) 0%, transparent 55%), radial-gradient(ellipse at 60% 30%, var(--atmo-orange) 0%, transparent 60%);
-  opacity: 0.15;
+body.atmo-landing::after {
+  background-image: var(--atmo-img, none);
+  opacity: 0.22;
+  background-position: 75% 45%;
 }
 
-/* All content above the atmospheric layer */
+/* HOME DASHBOARD — soft peach + sage wash */
+body.atmo-home::before {
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 15%, rgba(253,232,220,0.9) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 85%, rgba(221,231,218,0.75) 0%, transparent 60%),
+    linear-gradient(160deg, var(--warm-white) 0%, var(--cream) 70%);
+}
+body.atmo-home::after {
+  background-image: var(--atmo-img, none);
+  opacity: 0.08;
+  background-position: 90% 50%;
+}
+
+/* CIRCLES — colorful back (people together) */
+body.atmo-circles::before {
+  background:
+    radial-gradient(ellipse 65% 55% at 70% 30%, rgba(232,168,76,0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 55% at 25% 75%, rgba(192,114,106,0.14) 0%, transparent 55%),
+    linear-gradient(180deg, var(--warm-white) 0%, var(--cream) 100%);
+}
+body.atmo-circles::after {
+  background-image: var(--atmo-img, none);
+  opacity: 0.10;
+  background-position: 50% 35%;
+}
+
+/* PROFILE — radar reveal, warm glow */
+body.atmo-profile::before {
+  background:
+    radial-gradient(ellipse 65% 60% at 50% 40%, rgba(232,168,76,0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 55% at 50% 90%, rgba(123,111,165,0.14) 0%, transparent 60%),
+    linear-gradient(180deg, var(--warm-white) 0%, var(--cream) 100%);
+}
+body.atmo-profile::after {
+  background-image: var(--atmo-img, none);
+  opacity: 0.18;
+  background-position: center 35%;
+}
+body.atmo-profile.revealing::after { opacity: 0.40; transition: opacity 1.2s ease; }
+body.atmo-profile.revealed::after  { opacity: 0.15; transition: opacity 0.8s ease; }
+
+/* COMPANION — calmer, lavender dusk */
+body.atmo-companion::before {
+  background:
+    radial-gradient(ellipse 70% 50% at 80% 20%, rgba(228,223,238,0.85) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 55% at 20% 80%, rgba(247,221,224,0.7) 0%, transparent 55%),
+    linear-gradient(160deg, var(--warm-white) 0%, var(--cream) 100%);
+}
+body.atmo-companion::after {
+  background-image: var(--atmo-img, none);
+  opacity: 0.06;
+  background-position: 100% 0%;
+}
+
+/* HUB — breathing, dancer motion */
+body.atmo-hub::before {
+  background:
+    radial-gradient(ellipse 70% 55% at 30% 30%, rgba(253,232,220,0.85) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 55% at 80% 80%, rgba(232,168,76,0.14) 0%, transparent 55%),
+    linear-gradient(160deg, var(--warm-white) 0%, var(--cream) 100%);
+}
+body.atmo-hub::after {
+  background-image: var(--atmo-img, none);
+  opacity: 0.14;
+  background-position: 70% 50%;
+}
+
+/* ASSESSMENT — minimal */
+body.atmo-assessment::before {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 20%, rgba(228,223,238,0.7) 0%, transparent 60%),
+    linear-gradient(180deg, var(--warm-white) 0%, var(--cream) 100%);
+}
+body.atmo-assessment::after { opacity: 0; }
+
+/* Content above the atmospheric layers */
 #root { position: relative; z-index: 1; }
 
+/* ------------------------------------------------------------
+   TYPOGRAPHY
+   ------------------------------------------------------------ */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Playfair Display', Georgia, serif;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.15;
   color: var(--charcoal);
+  letter-spacing: -0.01em;
 }
-
 .font-mono { font-family: 'JetBrains Mono', monospace; }
+.font-serif { font-family: 'Playfair Display', Georgia, serif; }
 
-/* Animations */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+/* ------------------------------------------------------------
+   SOFT CARD SYSTEM (image-5 inspired)
+   ------------------------------------------------------------ */
+.soft-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(232,228,222,0.6);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+  position: relative;
+  overflow: hidden;
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(192, 114, 106, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(192, 114, 106, 0); }
-}
-@keyframes shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-@keyframes radarExpand {
-  from { transform: scale(0); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-@keyframes breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-}
-@keyframes ringExpand {
-  from { transform: scale(0); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
+.soft-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); }
+.soft-card.no-hover:hover { transform: none; box-shadow: var(--shadow-card); }
 
-.animate-fade-up { animation: fadeUp 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards; opacity: 0; }
-.animate-fade-in { animation: fadeIn 0.5s ease forwards; opacity: 0; }
+.soft-card-tint-peach    { background: linear-gradient(160deg, #FFF4EC 0%, #FDE8DC 100%); }
+.soft-card-tint-rose     { background: linear-gradient(160deg, #FCEBED 0%, #F7DDE0 100%); }
+.soft-card-tint-sage     { background: linear-gradient(160deg, #E8EEE4 0%, #DDE7DA 100%); }
+.soft-card-tint-lavender { background: linear-gradient(160deg, #EDE8F5 0%, #E4DFEE 100%); }
+.soft-card-tint-cream    { background: linear-gradient(160deg, #FBF5EA 0%, #F4ECDF 100%); }
+.soft-card-tint-sky      { background: linear-gradient(160deg, #EAF0F6 0%, #DEE6ED 100%); }
+.soft-card-tint-sunset   { background: linear-gradient(160deg, #FDEAD5 0%, #F9D7BE 40%, #F5C8B7 100%); }
+.soft-card-tint-dusk     { background: linear-gradient(160deg, #E5DEEC 0%, #CFC4DD 55%, #C1A1B5 100%); color: var(--warm-white); }
+
+.soft-card-glow-orange { box-shadow: var(--shadow-card), var(--shadow-glow-orange); }
+.soft-card-glow-lavender { box-shadow: var(--shadow-card), var(--shadow-glow-lavender); }
+
+/* Legacy (keep for gradual migration) */
+.shadow-eunoia { box-shadow: var(--shadow-card); }
+.shadow-eunoia-hover { box-shadow: var(--shadow-card-hover); }
+
+/* ------------------------------------------------------------
+   ANIMATIONS
+   ------------------------------------------------------------ */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(192,114,106,0.4); } 50% { box-shadow: 0 0 0 10px rgba(192,114,106,0); } }
+@keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+@keyframes breathe { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.18); opacity: 1; } }
+@keyframes slowPulse { 0%, 100% { transform: scale(1); filter: blur(0px); } 50% { transform: scale(1.04); filter: blur(2px); } }
+@keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes spinSlow { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes shineEdge { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+
+.animate-fade-up { animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards; opacity: 0; }
+.animate-fade-in { animation: fadeIn 0.6s ease forwards; opacity: 0; }
 .animate-pulse-crisis { animation: pulseGlow 3s ease-in-out infinite; }
-.animate-radar { animation: radarExpand 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.animate-breathe { animation: breathe 8s ease-in-out infinite; }
+.animate-slow-pulse { animation: slowPulse 6s ease-in-out infinite; }
+.animate-float { animation: floatY 6s ease-in-out infinite; }
+.animate-spin-slow { animation: spinSlow 40s linear infinite; }
 
-.stagger-1 { animation-delay: 0.05s; }
-.stagger-2 { animation-delay: 0.15s; }
-.stagger-3 { animation-delay: 0.30s; }
-.stagger-4 { animation-delay: 0.45s; }
+.stagger-1 { animation-delay: 0.08s; }
+.stagger-2 { animation-delay: 0.18s; }
+.stagger-3 { animation-delay: 0.32s; }
+.stagger-4 { animation-delay: 0.46s; }
 .stagger-5 { animation-delay: 0.60s; }
-.stagger-6 { animation-delay: 0.75s; }
+.stagger-6 { animation-delay: 0.74s; }
+.stagger-7 { animation-delay: 0.88s; }
+.stagger-8 { animation-delay: 1.02s; }
 
+/* ------------------------------------------------------------
+   SKELETON LOADER
+   ------------------------------------------------------------ */
 .skeleton {
-  background: linear-gradient(90deg, var(--border) 25%, var(--warm-white) 50%, var(--border) 75%);
+  background: linear-gradient(90deg, rgba(232,228,222,0.55) 25%, rgba(253,252,250,0.9) 50%, rgba(232,228,222,0.55) 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: 8px;
+  animation: shimmer 1.8s linear infinite;
+  border-radius: var(--radius-sm);
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--cream); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--mid); }
-
-::selection {
-  background-color: rgba(193, 123, 47, 0.15);
-  color: var(--charcoal);
+/* ------------------------------------------------------------
+   BREATHING ORB
+   ------------------------------------------------------------ */
+.breath-orb {
+  width: 240px; height: 240px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFE2C7 0%, #E8A84C 35%, #C17B2F 70%, #7B6FA5 100%);
+  box-shadow: 0 0 80px -10px rgba(232,168,76,0.6), inset 0 -20px 60px rgba(123,111,165,0.35), inset 0 20px 40px rgba(255,255,255,0.4);
+  position: relative;
+}
+.breath-orb::after {
+  content: '';
+  position: absolute; inset: -40px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(232,168,76,0.25) 0%, transparent 60%);
+  filter: blur(20px);
 }
 
+/* ------------------------------------------------------------
+   SCROLLBAR + SELECTION
+   ------------------------------------------------------------ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(107,107,112,0.25); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(107,107,112,0.45); }
+::selection { background-color: rgba(193, 123, 47, 0.18); color: var(--charcoal); }
+
+/* Force emergent labelers to be transparent */
 @layer base {
   [data-debug-wrapper="true"] { display: contents !important; }
 }
+
+/* Utility: gradient text */
+.gradient-text-warm {
+  background: linear-gradient(135deg, #E8A84C 0%, #C17B2F 50%, #7B6FA5 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Soft glass navbar */
+.glass-nav {
+  background: rgba(253,252,250,0.75);
+  backdrop-filter: saturate(140%) blur(16px);
+  -webkit-backdrop-filter: saturate(140%) blur(16px);
+  border-bottom: 1px solid rgba(232,228,222,0.6);
+}
+
+/* Hide scrollbar for horizontal strips */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }

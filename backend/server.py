@@ -65,6 +65,11 @@ class ConsentUpdate(BaseModel):
     scope: str
     granted: bool
 
+class MoodCheckinRequest(BaseModel):
+    mood: str  # "radiant" | "steady" | "tender" | "heavy" | "depleted"
+    intensity: int = 3  # 1-5
+    note: Optional[str] = None
+
 # ============================================================
 # AUTH HELPERS
 # ============================================================
@@ -886,6 +891,147 @@ async def get_practices():
     return {"practices": PRACTICES}
 
 # ============================================================
+# MOOD CHECK-IN ROUTES
+# ============================================================
+MOOD_META = {
+    "radiant":   {"label": "Radiant",   "value": 5, "color": "#E8A84C", "description": "Bright, energised, open"},
+    "steady":    {"label": "Steady",    "value": 4, "color": "#7FB88F", "description": "Grounded, calm, capable"},
+    "tender":    {"label": "Tender",    "value": 3, "color": "#C8A0B5", "description": "Sensitive, reflective"},
+    "heavy":     {"label": "Heavy",     "value": 2, "color": "#7B6FA5", "description": "Weighed down, tired"},
+    "depleted":  {"label": "Depleted",  "value": 1, "color": "#C0726A", "description": "Running on empty"},
+}
+
+def _today_str():
+    return datetime.now(timezone.utc).date().isoformat()
+
+@api_router.get("/mood/meta")
+async def get_mood_meta():
+    return {"moods": MOOD_META}
+
+@api_router.post("/mood/checkin")
+async def mood_checkin(req: MoodCheckinRequest, request: Request):
+    user = await get_current_user(request)
+    if req.mood not in MOOD_META:
+        raise HTTPException(status_code=400, detail="Invalid mood")
+    today = _today_str()
+    existing = await db.mood_entries.find_one({"user_id": user["id"], "date": today})
+    doc = {
+        "mood": req.mood,
+        "intensity": max(1, min(5, req.intensity)),
+        "note": (req.note or "")[:500],
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if existing:
+        await db.mood_entries.update_one({"_id": existing["_id"]}, {"$set": doc})
+        entry = {**existing, **doc}
+        entry.pop("_id", None)
+        return {"entry": entry, "created": False}
+    entry_id = str(uuid.uuid4())
+    entry = {
+        "id": entry_id, "user_id": user["id"], "date": today,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        **doc
+    }
+    await db.mood_entries.insert_one({**entry, "_id": entry_id})
+    return {"entry": entry, "created": True}
+
+@api_router.get("/mood/today")
+async def mood_today(request: Request):
+    user = await get_current_user(request)
+    entry = await db.mood_entries.find_one({"user_id": user["id"], "date": _today_str()}, {"_id": 0})
+    return {"entry": entry}
+
+@api_router.get("/mood/calendar")
+async def mood_calendar(request: Request, days: int = 90):
+    user = await get_current_user(request)
+    days = max(7, min(180, days))
+    cutoff = (datetime.now(timezone.utc).date() - timedelta(days=days - 1)).isoformat()
+    entries = await db.mood_entries.find(
+        {"user_id": user["id"], "date": {"$gte": cutoff}}, {"_id": 0}
+    ).sort("date", 1).to_list(days + 10)
+    # Build continuous day map
+    by_date = {e["date"]: e for e in entries}
+    today = datetime.now(timezone.utc).date()
+    out = []
+    for i in range(days):
+        d = (today - timedelta(days=days - 1 - i)).isoformat()
+        e = by_date.get(d)
+        out.append({
+            "date": d,
+            "mood": e["mood"] if e else None,
+            "intensity": e.get("intensity") if e else None,
+            "note": e.get("note") if e else None,
+        })
+    # Stats
+    logged_values = [MOOD_META[e["mood"]]["value"] for e in entries if e.get("mood") in MOOD_META]
+    avg = round(sum(logged_values) / len(logged_values), 2) if logged_values else 0
+    # Streak (consecutive days up to today)
+    streak = 0
+    for i in range(len(out) - 1, -1, -1):
+        if out[i]["mood"]:
+            streak += 1
+        else:
+            break
+    return {
+        "days": out, "logged_count": len(entries), "avg_value": avg, "streak": streak,
+        "total_days": days
+    }
+
+# ============================================================
+# DASHBOARD AGGREGATE
+# ============================================================
+@api_router.get("/dashboard/summary")
+async def dashboard_summary(request: Request):
+    user = await get_current_user(request)
+    uid = user["id"]
+    # Latest profile
+    profiles = await db.wellness_profiles.find({"user_id": uid}, {"_id": 0}).sort("generated_at", -1).to_list(1)
+    profile = profiles[0] if profiles else None
+    # Assessments count
+    assessment_count = await db.assessments.count_documents({"user_id": uid})
+    # Reflection count
+    reflection_count = await db.reflections.count_documents({"user_id": uid, "is_private": True})
+    qualifying = await db.reflections.count_documents({"user_id": uid, "is_private": True, "word_count": {"$gte": 100}})
+    # Today's mood
+    mood_today = await db.mood_entries.find_one({"user_id": uid, "date": _today_str()}, {"_id": 0})
+    # Streak
+    cutoff = (datetime.now(timezone.utc).date() - timedelta(days=30)).isoformat()
+    recent_moods = await db.mood_entries.find(
+        {"user_id": uid, "date": {"$gte": cutoff}}, {"_id": 0}
+    ).sort("date", -1).to_list(31)
+    streak = 0
+    today_date = datetime.now(timezone.utc).date()
+    seen_dates = {m["date"] for m in recent_moods}
+    for i in range(31):
+        d = (today_date - timedelta(days=i)).isoformat()
+        if d in seen_dates:
+            streak += 1
+        else:
+            if i > 0:  # allow today to be empty
+                break
+            if not mood_today:
+                break
+    # Recent forum activity (global latest 3 posts for feed)
+    recent_posts = await db.reflections.find(
+        {"forum_id": {"$ne": None}, "parent_id": None, "moderation_status": {"$in": ["approved", "rewritten"]}},
+        {"_id": 0, "body": 1, "display_name": 1, "forum_id": 1, "created_at": 1}
+    ).sort("created_at", -1).to_list(3)
+    for p in recent_posts:
+        forum = await db.forums.find_one({"id": p["forum_id"]}, {"_id": 0, "name": 1})
+        p["forum_name"] = forum["name"] if forum else ""
+        p["body"] = p["body"][:180]
+    return {
+        "user": {k: v for k, v in user.items() if k in ("id", "display_name", "email", "locale", "role")},
+        "profile": profile,
+        "assessment_count": assessment_count,
+        "reflection_count": reflection_count,
+        "qualifying_count": qualifying,
+        "mood_today": mood_today,
+        "streak": streak,
+        "recent_posts": recent_posts,
+    }
+
+# ============================================================
 # SEED DATA
 # ============================================================
 SEED_FORUMS = [
@@ -930,6 +1076,109 @@ SEED_POSTS = [
     {"forum_id": "forum-general-burnout", "display_name": "Dr_3371", "body": "Took a walk during lunch for the first time in months. Just ten minutes. Noticed the sky was that specific shade of blue that used to make me happy. Did not make me happy today, but I noticed it. That feels like something.", "user_id": "seed-user-12"},
 ]
 
+async def seed_demo_user():
+    """Seed a demo account with rich sample data for easy preview."""
+    email = "demo@eunoia.app"
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        return existing["id"]
+    user_id = "demo-user-eunoia"
+    user = {
+        "id": user_id, "_id": user_id, "email": email,
+        "display_name": "Resident_2580",
+        "locale": "IN", "role": "resident",
+        "created_at": (datetime.now(timezone.utc) - timedelta(days=45)).isoformat(),
+        "onboarded": True,
+    }
+    await db.users.insert_one(user)
+    # Consents
+    for scope, granted in [("research_scales", True), ("research_reflections", True), ("data_trust", False)]:
+        cid = str(uuid.uuid4())
+        await db.consents.insert_one({
+            "_id": cid, "id": cid, "user_id": user_id, "scope": scope,
+            "granted": granted,
+            "granted_at": datetime.now(timezone.utc).isoformat()
+        })
+    # Sample assessments
+    scale_scores = {"PHQ-9": 14, "GAD-7": 12, "PSS-10": 27, "PSQI": 11,
+                    "MBI-HSS-SUBSET": {"ee": 16, "dp": 7, "pa": 3}, "UCLA-3": 6}
+    for scale, score in scale_scores.items():
+        aid = str(uuid.uuid4())
+        await db.assessments.insert_one({
+            "_id": aid, "id": aid, "user_id": user_id, "scale_name": scale,
+            "raw_scores_json": {}, "computed_score": score if not isinstance(score, dict) else json.dumps(score),
+            "taken_at": (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+        })
+    # Wellness profile
+    profile_id = str(uuid.uuid4())
+    profile = {
+        "_id": profile_id, "id": profile_id, "user_id": user_id,
+        "archetype": "The Over-Committed Healer",
+        "anxiety_score": 57, "stress_score": 68, "loneliness_score": 50,
+        "burnout_score": 72, "sleep_score": 46,
+        "summary": "You are running on fumes, and you know it. The exhaustion, the emotional weight, the sense that you are giving everything and it is never enough \u2014 these are not flaws. They are what the body does when it has not been allowed to rest. You do not need fixing. You need a cohort.",
+        "recommended_forum_id": "forum-sleepless-ward",
+        "recommended_forum_name": "The Sleepless Ward",
+        "generated_at": (datetime.now(timezone.utc) - timedelta(days=30)).isoformat(),
+        "source": "assessment",
+        "citations": [
+            "PHQ-9: Kroenke, Spitzer & Williams, J Gen Intern Med 2001",
+            "GAD-7: Spitzer, Kroenke, Williams & Lowe, Arch Intern Med 2006",
+            "PSS-10: Cohen, Kamarck & Mermelstein, J Health Soc Behav 1983",
+            "MBI-HSS: Maslach & Jackson, J Occup Behav 1981"
+        ]
+    }
+    await db.wellness_profiles.insert_one(profile)
+    # Sample private reflections
+    demo_reflections = [
+        "Another night shift bled into another morning. I drove home with the windows down just to stay awake, and when I got to my apartment I sat in the car for twenty minutes because I did not have the energy to open the door. I am not sure what I am doing anymore. Medicine was supposed to feel meaningful, and most days it does, but today I just felt like a machine that keeps running.",
+        "Had a good patient interaction today. An older woman held my hand and said 'you look tired, dear.' I almost cried right there. I did not realize how much I have been hiding it. I wonder if the patients see more of me than my colleagues do.",
+        "The attending criticized me in front of the team again. I know it is how medicine works, I know it is not personal, but I went home and could not sleep. Kept replaying it. Kept thinking maybe I am not cut out for this. Maybe the impostor feeling is accurate this time. I do not know who to talk to about this.",
+        "Forced myself to take a walk at lunch. Ten minutes in the hospital garden. Sky was impossibly blue. I noticed it, which felt like something, even if I did not feel happy exactly. Small wins count. I have to remember they count.",
+        "Nightmares again. Code blue that never happened, but in the dream I was the one calling it and I could not remember the dose. Woke up at 3 AM shaking. This is not sustainable. I know it is not sustainable. I just do not know what the alternative looks like."
+    ]
+    for i, body in enumerate(demo_reflections):
+        rid = str(uuid.uuid4())
+        await db.reflections.insert_one({
+            "_id": rid, "id": rid, "user_id": user_id, "forum_id": None,
+            "body": body, "parent_id": None,
+            "moderation_status": "approved", "moderation_notes": None,
+            "is_private": True, "word_count": len(body.split()),
+            "created_at": (datetime.now(timezone.utc) - timedelta(days=20 - i * 3)).isoformat()
+        })
+    # 45 days of mood entries with realistic pattern
+    mood_sequence = [
+        "heavy", "heavy", "depleted", "tender", "steady", None, "tender",
+        "heavy", "tender", "steady", "steady", None, "radiant", "steady",
+        "heavy", "depleted", "heavy", "tender", "steady", None, "steady",
+        "tender", "heavy", "tender", "steady", "radiant", None, "tender",
+        "heavy", "depleted", "tender", "steady", "steady", "tender", "heavy",
+        None, "steady", "tender", "radiant", "steady", "tender", "heavy",
+        "depleted", "tender", "steady"
+    ]
+    notes_map = {
+        "radiant": "Slept well. Saw a patient recover. Today felt human.",
+        "steady": "Normal day. Not bad.",
+        "tender": "A bit raw. Kept it together though.",
+        "heavy": "Everything felt harder than it should.",
+        "depleted": "Running on fumes. Need a real break.",
+    }
+    for i, mood in enumerate(mood_sequence):
+        if mood is None:
+            continue
+        date = (datetime.now(timezone.utc).date() - timedelta(days=len(mood_sequence) - 1 - i)).isoformat()
+        mid = str(uuid.uuid4())
+        await db.mood_entries.insert_one({
+            "_id": mid, "id": mid, "user_id": user_id, "date": date,
+            "mood": mood,
+            "intensity": 3 if mood in ("tender", "steady") else (2 if mood == "heavy" else (1 if mood == "depleted" else 4)),
+            "note": notes_map.get(mood, ""),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        })
+    logger.info(f"Seeded demo user: {email}")
+    return user_id
+
 async def seed_database():
     # Seed forums
     for forum in SEED_FORUMS:
@@ -967,6 +1216,10 @@ async def seed_database():
     await db.wellness_profiles.create_index("user_id")
     await db.consents.create_index("user_id")
     await db.crisis_events.create_index("user_id")
+    await db.mood_entries.create_index([("user_id", 1), ("date", -1)])
+
+    # Seed demo account
+    await seed_demo_user()
 
     logger.info("Database seeding complete")
 

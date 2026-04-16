@@ -125,7 +125,7 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center pt-16">
+      <div className="min-h-screen flex items-center justify-center pt-16">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="font-sans text-mid text-sm">Loading your Wellness Profile...</p>
@@ -136,8 +136,8 @@ export default function Profile() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center pt-16 px-4">
-        <div className="text-center max-w-md">
+      <div className="min-h-screen flex items-center justify-center pt-16 px-4">
+        <div className="soft-card p-10 text-center max-w-md">
           <h2 className="font-serif text-2xl text-charcoal mb-4">No profile yet</h2>
           <p className="font-sans text-mid text-sm mb-6">Complete your assessment or write 3 reflections to generate your Wellness Profile.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -163,7 +163,7 @@ export default function Profile() {
   ];
 
   return (
-    <div className="min-h-screen bg-cream pt-20 pb-16 px-4" data-testid="profile-page">
+    <div className="min-h-screen pt-20 pb-16 px-4" data-testid="profile-page">
       <div className="max-w-[720px] mx-auto">
         {/* Archetype */}
         {revealed && (
@@ -183,14 +183,14 @@ export default function Profile() {
 
         {/* Radar Chart */}
         {revealed && (
-          <div className="mb-10 animate-fade-up stagger-2">
+          <div className="soft-card no-hover p-8 mb-8 animate-fade-up stagger-2">
             <RadarChart data={radarData} animated={chartAnimated} />
           </div>
         )}
 
         {/* Summary */}
         {revealed && (
-          <div className="bg-card-bg rounded-[18px] shadow-eunoia p-8 mb-8 animate-fade-up stagger-3">
+          <div className="soft-card soft-card-tint-cream no-hover p-8 mb-8 animate-fade-up stagger-3">
             <p className="font-serif text-base sm:text-lg italic text-charcoal leading-[1.7] text-center" data-testid="profile-summary">
               &ldquo;{profile.summary}&rdquo;
             </p>
@@ -199,15 +199,15 @@ export default function Profile() {
 
         {/* Recommendation cards */}
         {revealed && (
-          <div className="flex flex-col sm:flex-row gap-4 mb-8 animate-fade-up stagger-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 animate-fade-up stagger-4">
             {profile.recommended_forum_name && (
               <Link
                 to={`/circles/${profile.recommended_forum_id}`}
                 data-testid="join-circle-btn"
-                className="flex-1 bg-card-bg rounded-[18px] shadow-eunoia p-5 border-2 border-accent/20 hover:-translate-y-[2px] hover:border-accent/40 transition-all duration-300 no-underline"
+                className="soft-card soft-card-tint-peach p-5 no-underline"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center"><Users size={18} className="text-accent" /></div>
+                  <div className="w-10 h-10 rounded-xl bg-accent/15 flex items-center justify-center"><Users size={18} className="text-accent" /></div>
                   <div>
                     <h3 className="font-serif text-base font-semibold text-charcoal">{profile.recommended_forum_name}</h3>
                     <p className="font-sans text-xs text-mid">Peers who understand</p>
@@ -216,12 +216,12 @@ export default function Profile() {
                 <span className="font-sans text-xs text-accent font-medium">Join the circle &rarr;</span>
               </Link>
             )}
-            <Link to="/hub" className="flex-1 bg-card-bg rounded-[18px] shadow-eunoia p-5 hover:-translate-y-[2px] transition-all duration-300 no-underline">
+            <Link to="/hub" className="soft-card soft-card-tint-sage p-5 no-underline">
               <h3 className="font-serif text-base font-semibold text-charcoal mb-1">Wellness Hub</h3>
               <p className="font-sans text-xs text-mid mb-2">Evidence-based micro-practices</p>
               <span className="font-sans text-xs text-accent font-medium">Try a 2-minute practice &rarr;</span>
             </Link>
-            <Link to="/assessment" className="flex-1 bg-card-bg rounded-[18px] shadow-eunoia p-5 hover:-translate-y-[2px] transition-all duration-300 no-underline">
+            <Link to="/assessment" className="soft-card soft-card-tint-lavender p-5 no-underline">
               <h3 className="font-serif text-base font-semibold text-charcoal mb-1">Retake Assessment</h3>
               <p className="font-sans text-xs text-mid mb-2">Track your progress over time</p>
               <span className="font-sans text-xs text-accent font-medium">Start again &rarr;</span>

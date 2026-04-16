@@ -110,11 +110,11 @@ export default function CircleThread() {
     return <div className="font-sans text-sm p-4 rounded-xl bg-warm-white border border-eunoia-border whitespace-pre-wrap leading-relaxed">{result}</div>;
   };
 
-  if (loading) return <div className="min-h-screen bg-cream flex items-center justify-center pt-16"><p className="font-sans text-mid">Loading...</p></div>;
-  if (!forum) return <div className="min-h-screen bg-cream flex items-center justify-center pt-16"><p className="font-sans text-mid">Circle not found</p></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center pt-16"><p className="font-sans text-mid">Loading...</p></div>;
+  if (!forum) return <div className="min-h-screen flex items-center justify-center pt-16"><p className="font-sans text-mid">Circle not found</p></div>;
 
   return (
-    <div className="min-h-screen bg-cream pt-20 pb-16 px-4" data-testid="circle-thread-page">
+    <div className="min-h-screen pt-20 pb-16 px-4" data-testid="circle-thread-page">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8 animate-fade-up">
@@ -126,7 +126,7 @@ export default function CircleThread() {
         </div>
 
         {/* Compose */}
-        <div className="bg-card-bg rounded-eunoia shadow-eunoia p-6 mb-8 animate-fade-up stagger-2" data-testid="compose-box">
+        <div className="soft-card p-6 mb-8 animate-fade-up stagger-2" data-testid="compose-box">
           <textarea
             value={text}
             onChange={handleTextChange}
@@ -211,7 +211,7 @@ export default function CircleThread() {
             </div>
           )}
           {posts.map((post, i) => (
-            <div key={post.id} className={`bg-card-bg rounded-eunoia shadow-eunoia p-6 animate-fade-up`} data-testid={`post-${post.id}`}>
+            <div key={post.id} className={`soft-card p-6 animate-fade-up`} data-testid={`post-${post.id}`}>
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center">
                   <span className="font-sans text-xs font-medium text-accent">{(post.display_name || 'A')[0]}</span>

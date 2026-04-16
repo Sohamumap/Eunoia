@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import CrisisModal from '@/components/CrisisModal';
-import { Heart, BookOpen, Users, Compass, User, Settings, LogOut, Menu, X } from 'lucide-react';
+import { Heart, Home as HomeIcon, BookOpen, Users, Compass, User, Settings, LogOut, Menu, X } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -14,6 +14,7 @@ export default function Navbar() {
   const isActive = (path) => location.pathname === path;
 
   const navLinks = [
+    { path: '/home', label: 'Home', icon: HomeIcon },
     { path: '/companion', label: 'Companion', icon: BookOpen },
     { path: '/circles', label: 'Circles', icon: Users },
     { path: '/hub', label: 'Hub', icon: Compass },
@@ -28,10 +29,10 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-warm-white/95 backdrop-blur-md border-b border-eunoia-border" data-testid="navbar">
+      <nav className="fixed top-0 left-0 right-0 z-50 glass-nav" data-testid="navbar">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
-            <Link to={user ? '/companion' : '/'} className="flex items-center gap-2 no-underline" data-testid="nav-logo">
+            <Link to={user ? '/home' : '/'} className="flex items-center gap-2 no-underline" data-testid="nav-logo">
               <span className="font-serif text-2xl font-bold text-charcoal tracking-tight">Eunoia</span>
               <span className="text-accent text-xs font-sans font-light hidden sm:inline tracking-wide" style={{ marginTop: '4px' }}>beautiful thinking</span>
             </Link>

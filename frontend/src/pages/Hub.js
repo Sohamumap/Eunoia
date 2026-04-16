@@ -173,7 +173,7 @@ export default function Hub() {
   }, [api]);
 
   return (
-    <div className="min-h-screen bg-cream pt-20 pb-16 px-4" data-testid="hub-page">
+    <div className="min-h-screen pt-20 pb-16 px-4" data-testid="hub-page">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12 animate-fade-up">
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal mb-3">Wellness Hub</h1>
@@ -188,7 +188,7 @@ export default function Hub() {
             return (
               <div
                 key={p.id}
-                className={`bg-card-bg rounded-eunoia shadow-eunoia overflow-hidden transition-all duration-300 animate-fade-up stagger-${i + 1}`}
+                className={`soft-card overflow-hidden transition-all duration-300 animate-fade-up stagger-${i + 1}`}
                 data-testid={`practice-${p.id}`}
               >
                 <div className="p-6">

@@ -108,7 +108,7 @@ export default function Assessment() {
 
   if (phase === 'loading') {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center pt-16">
+      <div className="min-h-screen flex items-center justify-center pt-16">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="font-sans text-mid text-sm">Preparing your check-in...</p>
@@ -119,7 +119,7 @@ export default function Assessment() {
 
   if (phase === 'submitting') {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center pt-16" data-testid="assessment-submitting">
+      <div className="min-h-screen flex items-center justify-center pt-16" data-testid="assessment-submitting">
         <div className="text-center animate-fade-up">
           <div className="w-16 h-16 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-6">
             <Sparkles size={28} className="text-accent" />
@@ -134,7 +134,7 @@ export default function Assessment() {
   // Section intro screen
   if (phase === 'section_intro' && secInfo) {
     return (
-      <div className="min-h-screen bg-cream pt-20 pb-12 px-4" data-testid="assessment-page">
+      <div className="min-h-screen pt-20 pb-12 px-4" data-testid="assessment-page">
         {/* Global progress */}
         <div className="fixed top-16 left-0 right-0 h-1 bg-eunoia-border z-40">
           <div className="h-full transition-all duration-700 ease-out" style={{ width: `${globalProgress}%`, backgroundColor: secInfo.color }} />
@@ -187,7 +187,7 @@ export default function Assessment() {
   if (phase === 'section_done') {
     const isLast = currentSection === sections.length - 1;
     return (
-      <div className="min-h-screen bg-cream pt-20 pb-12 px-4" data-testid="section-done">
+      <div className="min-h-screen pt-20 pb-12 px-4" data-testid="section-done">
         <div className="fixed top-16 left-0 right-0 h-1 bg-eunoia-border z-40">
           <div className="h-full transition-all duration-700 ease-out" style={{ width: `${globalProgress}%`, backgroundColor: secInfo.color }} />
         </div>
@@ -235,7 +235,7 @@ export default function Assessment() {
   if (!q) return null;
 
   return (
-    <div className="min-h-screen bg-cream pt-20 pb-12 px-4" data-testid="assessment-page">
+    <div className="min-h-screen pt-20 pb-12 px-4" data-testid="assessment-page">
       {/* Global progress bar */}
       <div className="fixed top-16 left-0 right-0 h-1 bg-eunoia-border z-40">
         <div className="h-full transition-all duration-500 ease-out" style={{ width: `${globalProgress}%`, backgroundColor: secInfo?.color || 'var(--accent)' }} />

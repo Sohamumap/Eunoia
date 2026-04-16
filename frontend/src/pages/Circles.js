@@ -39,14 +39,14 @@ export default function Circles() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-cream flex items-center justify-center pt-16">
+      <div className="min-h-screen flex items-center justify-center pt-16">
         <p className="font-sans text-mid text-sm">Loading circles...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-cream pt-20 pb-16 px-4" data-testid="circles-page">
+    <div className="min-h-screen pt-20 pb-16 px-4" data-testid="circles-page">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-12 animate-fade-up">
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal mb-3">Circles</h1>
@@ -59,7 +59,7 @@ export default function Circles() {
               key={forum.id}
               to={`/circles/${forum.id}`}
               data-testid={`circle-${forum.id}`}
-              className={`block bg-card-bg rounded-eunoia shadow-eunoia p-6 hover:-translate-y-[2px] hover:shadow-eunoia-hover transition-all duration-300 no-underline animate-fade-up stagger-${i + 1}`}
+              className={`block soft-card p-6 hover:-translate-y-[2px] hover:shadow-eunoia-hover transition-all duration-300 no-underline animate-fade-up stagger-${i + 1}`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">

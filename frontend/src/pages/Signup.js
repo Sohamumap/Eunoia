@@ -29,7 +29,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [previewName, setPreviewName] = useState('');
 
-  if (user) { navigate('/onboarding'); return null; }
+  if (user) { navigate('/home'); return null; }
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -53,7 +53,7 @@ export default function Signup() {
     setLoading(true);
     try {
       await login(email);
-      navigate('/companion');
+      navigate('/home');
     } catch (err) {
       const detail = err.response?.data?.detail;
       setError(typeof detail === 'string' ? detail : 'Something went wrong. Please try again.');
@@ -63,7 +63,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center px-4 py-12" data-testid="signup-page">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12" data-testid="signup-page">
       <div className="w-full max-w-md">
         <div className="text-center mb-10 animate-fade-up">
           <Link to="/" className="no-underline">
@@ -74,7 +74,7 @@ export default function Signup() {
           </p>
         </div>
 
-        <div className="bg-card-bg rounded-eunoia shadow-eunoia p-8 animate-fade-up stagger-2">
+        <div className="soft-card no-hover p-8 animate-fade-up stagger-2">
           {/* Mode toggle */}
           <div className="flex gap-2 mb-8 p-1 bg-cream rounded-xl">
             <button
@@ -191,6 +191,26 @@ export default function Signup() {
               {loading ? 'Please wait...' : mode === 'signup' ? 'Create anonymous account' : 'Sign in with email'}
               {!loading && <ArrowRight size={16} />}
             </button>
+
+            {mode === 'login' && (
+              <button
+                type="button"
+                onClick={async () => {
+                  setEmail('demo@eunoia.app');
+                  setLoading(true);
+                  try {
+                    await login('demo@eunoia.app');
+                    navigate('/home');
+                  } catch (err) {
+                    setError('Demo login failed');
+                  } finally { setLoading(false); }
+                }}
+                data-testid="demo-login-btn"
+                className="w-full mt-3 py-2.5 rounded-full border border-dashed border-accent/40 text-accent font-sans text-xs hover:bg-accent/5 transition-all"
+              >
+                Try demo account · demo@eunoia.app
+              </button>
+            )}
           </form>
         </div>
 

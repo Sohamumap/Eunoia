@@ -38,7 +38,7 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user?.onboarded) navigate('/assessment');
+    if (user?.onboarded) navigate('/home');
   }, [user, navigate]);
 
   const toggleConsent = (scope) => {
@@ -52,7 +52,7 @@ export default function Onboarding() {
         await api('put', '/consent/update', { scope, granted });
       }
       await completeOnboarding();
-      navigate('/assessment');
+      navigate('/home');
     } catch (err) {
       console.error(err);
     } finally {
@@ -61,7 +61,7 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center px-4 py-12" data-testid="onboarding-page">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12" data-testid="onboarding-page">
       <div className="w-full max-w-lg">
         <div className="text-center mb-10 animate-fade-up">
           <p className="font-sans text-sm text-accent font-medium mb-2">Welcome, {user?.display_name}</p>

@@ -65,7 +65,7 @@ export default function Companion() {
   };
 
   return (
-    <div className="min-h-screen bg-cream pt-20 pb-16" data-testid="companion-page">
+    <div className="min-h-screen pt-20 pb-16" data-testid="companion-page">
       <Toaster position="top-center" />
 
       <div className="flex h-[calc(100vh-5rem)]">

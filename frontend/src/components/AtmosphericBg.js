@@ -2,14 +2,16 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const routeAtmoMap = {
-  '/': 'atmo-landing',
-  '/circles': 'atmo-circles',
-  '/profile': 'atmo-profile',
-  '/companion': 'atmo-companion',
-  '/assessment': 'atmo-assessment',
-  '/hub': 'atmo-companion',
-  '/settings/data': 'atmo-companion',
-  '/onboarding': 'atmo-companion',
+  '/': { cls: 'atmo-landing', img: '/assets/bg-glow-figure.jpg' },
+  '/home': { cls: 'atmo-home', img: '/assets/bg-glow-figure.jpg' },
+  '/circles': { cls: 'atmo-circles', img: '/assets/bg-colorful-back.jpg' },
+  '/profile': { cls: 'atmo-profile', img: '/assets/bg-glow-figure.jpg' },
+  '/companion': { cls: 'atmo-companion', img: '/assets/bg-dancer.jpg' },
+  '/hub': { cls: 'atmo-hub', img: '/assets/bg-dancer.jpg' },
+  '/assessment': { cls: 'atmo-assessment', img: null },
+  '/settings/data': { cls: 'atmo-home', img: '/assets/bg-glow-figure.jpg' },
+  '/onboarding': { cls: 'atmo-companion', img: '/assets/bg-dancer.jpg' },
+  '/signup': { cls: 'atmo-companion', img: '/assets/bg-dancer.jpg' },
 };
 
 export default function AtmosphericBg() {
@@ -17,17 +19,16 @@ export default function AtmosphericBg() {
 
   useEffect(() => {
     const path = location.pathname;
-    // Find matching route (handle /circles/:id)
-    let atmoClass = routeAtmoMap[path];
-    if (!atmoClass && path.startsWith('/circles/')) atmoClass = 'atmo-circles';
-    if (!atmoClass) atmoClass = 'atmo-companion';
+    let entry = routeAtmoMap[path];
+    if (!entry && path.startsWith('/circles/')) entry = routeAtmoMap['/circles'];
+    if (!entry) entry = routeAtmoMap['/home'];
 
-    // Remove all atmo classes
     document.body.className = document.body.className
       .split(' ')
       .filter(c => !c.startsWith('atmo-') && c !== 'revealing' && c !== 'revealed')
       .join(' ');
-    document.body.classList.add(atmoClass);
+    document.body.classList.add(entry.cls);
+    document.body.style.setProperty('--atmo-img', entry.img ? `url(${entry.img})` : 'none');
 
     return () => {
       document.body.className = document.body.className

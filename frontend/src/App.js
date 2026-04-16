@@ -15,6 +15,7 @@ import Circles from '@/pages/Circles';
 import CircleThread from '@/pages/CircleThread';
 import Companion from '@/pages/Companion';
 import DataSettings from '@/pages/DataSettings';
+import Home from '@/pages/Home';
 
 function AppLayout() {
   const location = useLocation();
@@ -28,6 +29,7 @@ function AppLayout() {
         <Route path="/" element={<Landing />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/assessment" element={<ProtectedRoute><Assessment /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/hub" element={<ProtectedRoute><Hub /></ProtectedRoute>} />

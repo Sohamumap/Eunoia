@@ -66,7 +66,7 @@ export default function DataSettings() {
     }
   };
 
-  if (loading) return <div className="min-h-screen bg-cream flex items-center justify-center pt-16"><p className="font-sans text-mid">Loading...</p></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center pt-16"><p className="font-sans text-mid">Loading...</p></div>;
 
   const consentItems = [
     { scope: 'research_scales', icon: BarChart3, title: 'Anonymized scale scores', desc: 'Your assessment scores may be included in aggregate academic research.' },
@@ -75,7 +75,7 @@ export default function DataSettings() {
   ];
 
   return (
-    <div className="min-h-screen bg-cream pt-20 pb-16 px-4" data-testid="data-settings-page">
+    <div className="min-h-screen pt-20 pb-16 px-4" data-testid="data-settings-page">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-12 animate-fade-up">
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal mb-3">Data Cooperative</h1>
@@ -83,7 +83,7 @@ export default function DataSettings() {
         </div>
 
         {/* Contribution summary */}
-        <div className="bg-card-bg rounded-eunoia shadow-eunoia p-6 mb-6 animate-fade-up stagger-1" data-testid="contribution-summary">
+        <div className="soft-card p-6 mb-6 animate-fade-up stagger-1" data-testid="contribution-summary">
           <div className="grid grid-cols-3 gap-6 text-center mb-6">
             <div>
               <div className="font-serif text-3xl font-bold text-charcoal">{contributions?.reflection_count || 0}</div>
@@ -107,7 +107,7 @@ export default function DataSettings() {
         {/* Consent toggles */}
         <div className="space-y-4 mb-8">
           {consentItems.map((c, i) => (
-            <div key={c.scope} className={`bg-card-bg rounded-eunoia shadow-eunoia p-5 animate-fade-up stagger-${i + 2}`} data-testid={`consent-${c.scope}`}>
+            <div key={c.scope} className={`soft-card p-5 animate-fade-up stagger-${i + 2}`} data-testid={`consent-${c.scope}`}>
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: consents[c.scope] ? 'rgba(193,123,47,0.08)' : 'rgba(107,107,112,0.05)' }}>
                   <c.icon size={18} className={consents[c.scope] ? 'text-accent' : 'text-mid'} />
@@ -132,7 +132,7 @@ export default function DataSettings() {
 
         {/* Contribution history */}
         {contributions?.history?.length > 0 && (
-          <div className="bg-card-bg rounded-eunoia shadow-eunoia p-6 mb-8 animate-fade-up stagger-5" data-testid="contribution-history">
+          <div className="soft-card p-6 mb-8 animate-fade-up stagger-5" data-testid="contribution-history">
             <h3 className="font-serif text-lg font-semibold text-charcoal mb-4">Contribution History</h3>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {contributions.history.map((item, i) => (
