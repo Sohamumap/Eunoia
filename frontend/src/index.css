@@ -1,45 +1,49 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Base palette */
+  /* Base palette - Enhanced boldness */
   --cream: #F8F5F0;
   --warm-white: #FDFCFA;
   --charcoal: #1C1C1E;
   --mid: #6B6B70;
   --soft: #9A9AA0;
-  --accent: #C17B2F;
-  --accent-light: #E8A84C;
-  --green: #4A7C59;
-  --rose: #C0726A;
-  --blue: #4A6FA5;
-  --lavender: #7B6FA5;
+  --accent: #D97D2A;
+  --accent-light: #F5A623;
+  --accent-dark: #A85F1F;
+  --green: #3D6B4C;
+  --rose: #B8594F;
+  --blue: #3E5E8F;
+  --lavender: #6B5C95;
   --card-bg: #FFFFFF;
   --border: #E8E4DE;
   --border-soft: #F0ECE5;
 
-  /* Soft pastel card tints (image-5 inspired) */
-  --tint-peach: #FDE8DC;
-  --tint-rose: #F7DDE0;
-  --tint-sage: #DDE7DA;
-  --tint-lavender: #E4DFEE;
-  --tint-cream: #F4ECDF;
-  --tint-sky: #DEE6ED;
-  --tint-sunset: #F9D7BE;
+  /* Bold tints - More saturated */
+  --tint-peach: #FCDBCA;
+  --tint-rose: #F5CFD3;
+  --tint-sage: #D1E0C5;
+  --tint-lavender: #DDD5ED;
+  --tint-cream: #F0E4D1;
+  --tint-sky: #D6E2ED;
+  --tint-sunset: #F7C4A5;
 
-  /* Soft-card layered shadow (neumorphic-ish) */
+  /* Dramatic shadows */
   --shadow-sm: 0 1px 2px rgba(28,28,30,0.04);
-  --shadow-card: 0 1px 2px rgba(28,28,30,0.03), 0 10px 30px -12px rgba(28,28,30,0.12), inset 0 1px 0 rgba(255,255,255,0.55);
-  --shadow-card-hover: 0 2px 4px rgba(28,28,30,0.04), 0 18px 40px -14px rgba(28,28,30,0.18), inset 0 1px 0 rgba(255,255,255,0.6);
-  --shadow-glow-orange: 0 0 60px -10px rgba(232,168,76,0.35);
-  --shadow-glow-lavender: 0 0 60px -10px rgba(123,111,165,0.3);
+  --shadow-card: 0 2px 4px rgba(28,28,30,0.04), 0 12px 35px -14px rgba(28,28,30,0.16), inset 0 1px 0 rgba(255,255,255,0.6);
+  --shadow-card-hover: 0 4px 8px rgba(28,28,30,0.06), 0 20px 50px -16px rgba(28,28,30,0.25), inset 0 1px 0 rgba(255,255,255,0.7);
+  --shadow-glow-orange: 0 0 80px -8px rgba(245,166,35,0.5);
+  --shadow-glow-lavender: 0 0 80px -8px rgba(107,92,149,0.45);
+  --shadow-dramatic: 0 8px 16px rgba(28,28,30,0.12), 0 24px 60px -20px rgba(28,28,30,0.3);
 
-  --radius: 22px;
-  --radius-sm: 14px;
-  --radius-lg: 28px;
+  /* Enhanced radii for boldness */
+  --radius: 24px;
+  --radius-sm: 16px;
+  --radius-lg: 32px;
+  --radius-xl: 40px;
 }
 
 * { box-sizing: border-box; }
@@ -48,43 +52,40 @@ html, body { overscroll-behavior: none; }
 
 body {
   margin: 0;
-  font-family: 'DM Sans', -apple-system, sans-serif;
-  font-weight: 400;
+  font-family: 'Syne', -apple-system, sans-serif;
+  font-weight: 500;
   color: var(--charcoal);
   background-color: var(--cream);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: 1.6;
+  line-height: 1.65;
+  letter-spacing: -0.01em;
 }
 
 /* ------------------------------------------------------------
-   ATMOSPHERIC BACKGROUND LAYERS
+   ATMOSPHERIC BACKGROUND LAYERS - Enhanced with grain
    Each route gets: (1) gradient color wash (back) + (2) image bleed (front-ish, masked)
    ------------------------------------------------------------ */
 
-/* Base gradient layer (always on) */
+/* Grain overlay for depth */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  transition: background 1.2s ease, opacity 1.2s ease;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.015'/%3E%3C/svg%3E");
+  transition: opacity 1.2s ease;
 }
 
-/* Image bleed layer */
+/* Gradient wash layer */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  filter: saturate(1.08) contrast(1.02);
-  opacity: 0;
-  transition: opacity 1.2s ease, background-image 0.8s ease;
+  transition: background 1.2s ease, opacity 1.2s ease;
 }
 
 /* LANDING — glow figure, warm */
@@ -179,41 +180,58 @@ body.atmo-assessment::after { opacity: 0; }
 #root { position: relative; z-index: 1; }
 
 /* ------------------------------------------------------------
-   TYPOGRAPHY
+   TYPOGRAPHY - Distinctive hierarchy (Design Skill compliant)
    ------------------------------------------------------------ */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Playfair Display', Georgia, serif;
   font-weight: 600;
-  line-height: 1.15;
+  line-height: 1.1;
   color: var(--charcoal);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
+h1 { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 700; letter-spacing: -0.03em; }
+h2 { font-size: clamp(1.75rem, 3.5vw, 2.5rem); font-weight: 600; }
+h3 { font-size: clamp(1.25rem, 2.5vw, 1.75rem); font-weight: 600; }
+
 .font-mono { font-family: 'JetBrains Mono', monospace; }
 .font-serif { font-family: 'Playfair Display', Georgia, serif; }
+.font-sans { font-family: 'Syne', -apple-system, sans-serif; }
 
 /* ------------------------------------------------------------
-   SOFT CARD SYSTEM (image-5 inspired)
+   SOFT CARD SYSTEM - Bold, distinctive (Design Skill)
    ------------------------------------------------------------ */
 .soft-card {
   background: var(--card-bg);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
-  border: 1px solid rgba(232,228,222,0.6);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+  border: 1px solid rgba(232,228,222,0.7);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.4s ease;
   position: relative;
   overflow: hidden;
 }
-.soft-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-2px); }
+.soft-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+.soft-card > * { position: relative; z-index: 2; }
+.soft-card:hover { 
+  box-shadow: var(--shadow-card-hover); 
+  transform: translateY(-3px); 
+}
 .soft-card.no-hover:hover { transform: none; box-shadow: var(--shadow-card); }
 
-.soft-card-tint-peach    { background: linear-gradient(160deg, #FFF4EC 0%, #FDE8DC 100%); }
-.soft-card-tint-rose     { background: linear-gradient(160deg, #FCEBED 0%, #F7DDE0 100%); }
-.soft-card-tint-sage     { background: linear-gradient(160deg, #E8EEE4 0%, #DDE7DA 100%); }
-.soft-card-tint-lavender { background: linear-gradient(160deg, #EDE8F5 0%, #E4DFEE 100%); }
-.soft-card-tint-cream    { background: linear-gradient(160deg, #FBF5EA 0%, #F4ECDF 100%); }
-.soft-card-tint-sky      { background: linear-gradient(160deg, #EAF0F6 0%, #DEE6ED 100%); }
-.soft-card-tint-sunset   { background: linear-gradient(160deg, #FDEAD5 0%, #F9D7BE 40%, #F5C8B7 100%); }
-.soft-card-tint-dusk     { background: linear-gradient(160deg, #E5DEEC 0%, #CFC4DD 55%, #C1A1B5 100%); color: var(--warm-white); }
+.soft-card-tint-peach    { background: linear-gradient(165deg, #FFEEE0 0%, #FCDBCA 60%, #F8CDB5 100%); }
+.soft-card-tint-rose     { background: linear-gradient(165deg, #FDEAEC 0%, #F5CFD3 60%, #F0B8BE 100%); }
+.soft-card-tint-sage     { background: linear-gradient(165deg, #E0ECDB 0%, #D1E0C5 60%, #C0D4B0 100%); }
+.soft-card-tint-lavender { background: linear-gradient(165deg, #EBE5F5 0%, #DDD5ED 60%, #CDC2E5 100%); }
+.soft-card-tint-cream    { background: linear-gradient(165deg, #F7EEDB 0%, #F0E4D1 60%, #E8D9BF 100%); }
+.soft-card-tint-sky      { background: linear-gradient(165deg, #E8F2F8 0%, #D6E2ED 60%, #C4D4E2 100%); }
+.soft-card-tint-sunset   { background: linear-gradient(165deg, #FADBC0 0%, #F7C4A5 50%, #F4A881 100%); }
+.soft-card-tint-dusk     { background: linear-gradient(165deg, #DDD3EB 0%, #C7B8D8 55%, #B098C5 100%); color: var(--warm-white); }
 
 .soft-card-glow-orange { box-shadow: var(--shadow-card), var(--shadow-glow-orange); }
 .soft-card-glow-lavender { box-shadow: var(--shadow-card), var(--shadow-glow-lavender); }
@@ -264,19 +282,43 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ------------------------------------------------------------
-   BREATHING ORB
+   BREATHING ORB - Enhanced
    ------------------------------------------------------------ */
 .breath-orb {
-  width: 240px; height: 240px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #FFE2C7 0%, #E8A84C 35%, #C17B2F 70%, #7B6FA5 100%);
-  box-shadow: 0 0 80px -10px rgba(232,168,76,0.6), inset 0 -20px 60px rgba(123,111,165,0.35), inset 0 20px 40px rgba(255,255,255,0.4);
+  width: 260px; height: 260px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFE2C7 0%, #F5A623 35%, #D97D2A 70%, #6B5C95 100%);
+  box-shadow: 0 0 100px -8px rgba(245,166,35,0.7), inset 0 -24px 70px rgba(107,92,149,0.4), inset 0 24px 50px rgba(255,255,255,0.45);
   position: relative;
 }
 .breath-orb::after {
   content: '';
-  position: absolute; inset: -40px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(232,168,76,0.25) 0%, transparent 60%);
-  filter: blur(20px);
+  position: absolute; inset: -50px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(245,166,35,0.35) 0%, transparent 65%);
+  filter: blur(25px);
+}
+
+/* ------------------------------------------------------------
+   CUSTOM CURSOR STATES (Design Skill - Spatial Details)
+   ------------------------------------------------------------ */
+.cursor-pointer { cursor: pointer; }
+.cursor-grab { cursor: grab; }
+.cursor-grabbing { cursor: grabbing; }
+
+a, button, [role="button"], .clickable {
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+a:active, button:active, [role="button"]:active, .clickable:active {
+  transform: scale(0.98);
+}
+
+/* Decorative hover for interactive cards */
+.hover-lift {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: var(--shadow-dramatic);
 }
 
 /* ------------------------------------------------------------
@@ -286,6 +328,34 @@ h1, h2, h3, h4, h5, h6 {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(107,107,112,0.25); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(107,107,112,0.45); }
+::selection { background-color: rgba(193, 123, 47, 0.18); color: var(--charcoal); }
+
+/* Force emergent labelers to be transparent */
+@layer base {
+  [data-debug-wrapper="true"] { display: contents !important; }
+}
+
+/* Gradient text - More vibrant */
+.gradient-text-warm {
+  background: linear-gradient(135deg, #F5A623 0%, #D97D2A 50%, #6B5C95 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+}
+
+/* Soft glass navbar */
+.glass-nav {
+  background: rgba(253,252,250,0.75);
+  backdrop-filter: saturate(140%) blur(16px);
+  -webkit-backdrop-filter: saturate(140%) blur(16px);
+  border-bottom: 1px solid rgba(232,228,222,0.6);
+}
+
+/* Hide scrollbar for horizontal strips */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+mb:hover { background: rgba(107,107,112,0.45); }
 ::selection { background-color: rgba(193, 123, 47, 0.18); color: var(--charcoal); }
 
 /* Force emergent labelers to be transparent */

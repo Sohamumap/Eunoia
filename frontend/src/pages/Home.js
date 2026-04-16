@@ -117,29 +117,29 @@ export default function Home() {
   return (
     <div className="min-h-screen pt-24 pb-20 px-4" data-testid="home-page">
       <div className="max-w-6xl mx-auto">
-        {/* Greeting */}
-        <div className="mb-10 animate-fade-up">
-          <p className="font-sans text-[11px] uppercase tracking-[0.14em] text-mid mb-2">Your Eunoia</p>
-          <h1 className="font-serif text-4xl sm:text-5xl font-bold text-charcoal mb-2 leading-[1.05]">
+        {/* Greeting - Orchestrated entry */}
+        <div className="mb-12 animate-fade-up">
+          <p className="font-sans text-[10px] uppercase tracking-[0.18em] text-mid mb-3 font-semibold">Your Eunoia</p>
+          <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold text-charcoal mb-3 leading-[1.02]">
             {greeting}
           </h1>
-          <p className="font-sans text-mid text-base">{subline}</p>
+          <p className="font-sans text-mid text-lg font-medium">{subline}</p>
         </div>
 
-        {/* Mosaic grid (image-5 inspired) */}
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-5">
+        {/* Mosaic grid - Orchestrated staggered reveal */}
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-6">
 
           {/* MOOD CHECK-IN — hero tile, sunset tint */}
           <SoftCard
             tint="sunset"
-            className="md:col-span-3 md:row-span-2 relative overflow-hidden"
-            padding="p-7"
+            className="md:col-span-3 md:row-span-2 relative overflow-hidden animate-scale-in stagger-1 hover-lift"
+            padding="p-8"
             data-testid="tile-mood-checkin"
           >
             {/* Decorative blur orb */}
-            <div className="absolute -top-10 -right-10 w-48 h-48 rounded-full animate-slow-pulse" style={{
-              background: 'radial-gradient(circle, rgba(255,255,255,0.5) 0%, rgba(232,168,76,0.3) 40%, transparent 70%)',
-              filter: 'blur(4px)',
+            <div className="absolute -top-12 -right-12 w-56 h-56 rounded-full animate-slow-pulse" style={{
+              background: 'radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(245,166,35,0.4) 40%, transparent 75%)',
+              filter: 'blur(6px)',
             }} />
             <div className="relative z-10">
               <MoodSelector onSaved={fetchSummary} />
@@ -147,11 +147,11 @@ export default function Home() {
           </SoftCard>
 
           {/* STATE SNAPSHOT — control-panel style */}
-          <SoftCard tint="white" className="md:col-span-3" padding="p-6" data-testid="tile-state">
+          <SoftCard tint="white" className="md:col-span-3 animate-slide-in-right stagger-2" padding="p-7" data-testid="tile-state">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="font-sans text-[11px] uppercase tracking-[0.12em] text-mid">State</p>
-                <h3 className="font-serif text-xl font-semibold text-charcoal">Where you are</h3>
+                <h3 className="font-serif text-2xl font-semibold text-charcoal">Where you are</h3>
               </div>
               {p && (
                 <Link to="/profile" className="flex items-center gap-1 text-[12px] text-accent font-medium no-underline">
@@ -193,7 +193,7 @@ export default function Home() {
           </SoftCard>
 
           {/* BREATHE CTA — Enhanced with glassmorphic effects */}
-          <SoftCard tint="dusk" className="md:col-span-3 flex items-center group hover:scale-[1.02] transition-transform duration-300" padding="p-7" data-testid="tile-breathe">
+          <SoftCard tint="dusk" className="md:col-span-3 flex items-center group animate-slide-in-left stagger-3 hover-lift" padding="p-8" data-testid="tile-breathe">
             <div className="flex items-center gap-5 w-full">
               <div className="relative flex-shrink-0 w-20 h-20 group-hover:scale-110 transition-transform duration-500">
                 {/* Pulsing glow rings */}
@@ -219,7 +219,7 @@ export default function Home() {
           </SoftCard>
 
           {/* JOURNEY NUMBERS - Enhanced with hover effects */}
-          <SoftCard tint="sage" className="md:col-span-2 group hover:scale-[1.02] transition-transform" padding="p-6" data-testid="tile-journey">
+          <SoftCard tint="sage" className="md:col-span-2 group animate-scale-in stagger-4 hover-lift" padding="p-7" data-testid="tile-journey">
             <p className="font-sans text-[11px] uppercase tracking-[0.12em] text-mid mb-3">Your journey</p>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white/30 transition-colors cursor-pointer">
@@ -259,11 +259,11 @@ export default function Home() {
           </SoftCard>
 
           {/* CIRCLES PREVIEW - Enhanced with hover effects */}
-          <SoftCard tint="peach" className="md:col-span-4" padding="p-6" data-testid="tile-circles">
+          <SoftCard tint="peach" className="md:col-span-4 animate-scale-in stagger-5" padding="p-7" data-testid="tile-circles">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="font-sans text-[11px] uppercase tracking-[0.12em] text-mid">Peer circles</p>
-                <h3 className="font-serif text-xl font-semibold text-charcoal">People who get it</h3>
+                <h3 className="font-serif text-2xl font-semibold text-charcoal">People who get it</h3>
               </div>
               <Link to="/circles" className="flex items-center gap-1 text-[12px] text-accent font-medium no-underline hover:gap-2 transition-all">
                 Browse all <ArrowUpRight size={13} />
@@ -297,7 +297,7 @@ export default function Home() {
           </SoftCard>
 
           {/* MOOD CALENDAR — full-width row */}
-          <SoftCard tint="white" className="md:col-span-6" padding="p-7" data-testid="tile-calendar">
+          <SoftCard tint="white" className="md:col-span-6 animate-fade-up stagger-6" padding="p-8" data-testid="tile-calendar">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <p className="font-sans text-[11px] uppercase tracking-[0.12em] text-mid">Last 13 weeks</p>
@@ -310,7 +310,7 @@ export default function Home() {
           </SoftCard>
 
           {/* CONSENT / DATA */}
-          <SoftCard tint="lavender" className="md:col-span-3" padding="p-6" data-testid="tile-consent">
+          <SoftCard tint="lavender" className="md:col-span-3 animate-slide-in-left stagger-7" padding="p-7" data-testid="tile-consent">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center bg-lavender/15">
                 <Shield size={18} className="text-lavender" />
@@ -329,7 +329,7 @@ export default function Home() {
           </SoftCard>
 
           {/* SLEEP / REST */}
-          <SoftCard tint="sky" className="md:col-span-3" padding="p-6" data-testid="tile-rest">
+          <SoftCard tint="sky" className="md:col-span-3 animate-slide-in-right stagger-8" padding="p-7" data-testid="tile-rest">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center bg-eunoia-blue/15">
                 <Moon size={18} className="text-eunoia-blue" />

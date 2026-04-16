@@ -35,10 +35,10 @@ function ConcentricCircles() {
           { num: '03', title: 'Data Cooperative', desc: 'You own your data. Opt in to share anonymized insights and receive a share of commercial value.' },
         ].map((item, i) => (
           <div key={`principle-${item.num}`} className={`flex gap-5 items-start ${visible ? 'animate-fade-up' : 'opacity-0'}`} style={{ animationDelay: `${i * 0.15 + 0.3}s` }}>
-            <span className="font-mono text-sm text-accent font-medium mt-1">{item.num}</span>
+            <span className="font-mono text-base text-accent font-bold mt-1">{item.num}</span>
             <div>
-              <h3 className="font-serif text-xl font-semibold text-charcoal mb-1">{item.title}</h3>
-              <p className="font-sans text-sm text-mid leading-relaxed">{item.desc}</p>
+              <h3 className="font-serif text-2xl font-semibold text-charcoal mb-2">{item.title}</h3>
+              <p className="font-sans text-base text-mid leading-relaxed">{item.desc}</p>
             </div>
           </div>
         ))}
@@ -268,69 +268,69 @@ export default function Landing() {
     <div className="min-h-screen" data-testid="landing-page">
       {/* Top nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-16">
-          <span className="font-serif text-xl italic" style={{ color: 'var(--accent)' }}>Eunoia</span>
-          <div className="flex items-center gap-5">
-            <a href="#features" className="hidden md:inline font-sans text-sm text-mid hover:text-charcoal transition-colors no-underline">Features</a>
-            <a href="#how-it-works" className="hidden md:inline font-sans text-sm text-mid hover:text-charcoal transition-colors no-underline">How it works</a>
+        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between h-18">
+          <span className="font-serif text-2xl italic font-semibold" style={{ color: 'var(--accent)' }}>Eunoia</span>
+          <div className="flex items-center gap-6">
+            <a href="#features" className="hidden md:inline font-sans text-base text-mid hover:text-charcoal transition-colors no-underline font-medium">Features</a>
+            <a href="#how-it-works" className="hidden md:inline font-sans text-base text-mid hover:text-charcoal transition-colors no-underline font-medium">How it works</a>
             <Link
               to="/signup"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-sans font-medium text-white no-underline animate-pulse-crisis"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-sans font-semibold text-white no-underline animate-pulse-crisis"
               style={{ backgroundColor: 'var(--rose)' }}
               data-testid="nav-get-help"
             >
-              <Heart size={13} fill="white" /> Get Help Now
+              <Heart size={14} fill="white" /> Get Help Now
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero — Split layout with strong visual */}
-      <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
-        {/* Prominent image right */}
+      {/* Hero — Split layout with strong visual + Diagonal emphasis */}
+      <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
+        {/* Prominent image right with diagonal mask */}
         <div
-          className="absolute top-0 right-0 w-full lg:w-[60%] h-full pointer-events-none"
+          className="absolute top-0 right-0 w-full lg:w-[65%] h-full pointer-events-none"
           style={{
             backgroundImage: 'url(/assets/bg-glow-figure.jpg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            opacity: 0.85,
-            maskImage: 'linear-gradient(to left, rgba(0,0,0,1) 20%, rgba(0,0,0,0.8) 55%, transparent 95%)',
-            WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,1) 20%, rgba(0,0,0,0.8) 55%, transparent 95%)',
+            opacity: 0.90,
+            maskImage: 'linear-gradient(135deg, transparent 0%, rgba(0,0,0,0.6) 35%, rgba(0,0,0,1) 60%)',
+            WebkitMaskImage: 'linear-gradient(135deg, transparent 0%, rgba(0,0,0,0.6) 35%, rgba(0,0,0,1) 60%)',
           }}
         />
         {/* Dancer subtle on left bottom */}
         <div
-          className="absolute bottom-0 left-0 w-[40%] h-[50%] pointer-events-none hidden lg:block"
+          className="absolute bottom-0 left-0 w-[45%] h-[55%] pointer-events-none hidden lg:block"
           style={{
             backgroundImage: 'url(/assets/bg-dancer.jpg)',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            opacity: 0.20,
-            maskImage: 'radial-gradient(ellipse at 20% 80%, rgba(0,0,0,0.7) 0%, transparent 65%)',
-            WebkitMaskImage: 'radial-gradient(ellipse at 20% 80%, rgba(0,0,0,0.7) 0%, transparent 65%)',
+            opacity: 0.24,
+            maskImage: 'radial-gradient(ellipse at 18% 82%, rgba(0,0,0,0.75) 0%, transparent 70%)',
+            WebkitMaskImage: 'radial-gradient(ellipse at 18% 82%, rgba(0,0,0,0.75) 0%, transparent 70%)',
           }}
         />
 
         <div className="max-w-6xl mx-auto px-6 w-full relative z-10">
           <div className="max-w-2xl">
-            <p className="font-sans text-[11px] tracking-[0.14em] uppercase text-mid mb-6 animate-fade-up" data-testid="hero-overline">
+            <p className="font-sans text-[10px] tracking-[0.20em] uppercase text-mid mb-7 animate-fade-up font-bold" data-testid="hero-overline">
               PEER SUPPORT &middot; NOT AI THERAPY
             </p>
-            <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-bold text-charcoal mb-6 animate-fade-up stagger-1 leading-[1.05]">
+            <h1 className="font-serif text-6xl sm:text-7xl lg:text-8xl font-bold text-charcoal mb-7 animate-fade-up stagger-1 leading-[1.0]">
               Support, not<br />
               <em className="font-normal italic gradient-text-warm">labels.</em><br />
               Clarity, not judgment.
             </h1>
-            <p className="font-sans text-lg text-mid max-w-lg mb-10 animate-fade-up stagger-2 leading-relaxed" style={{ fontWeight: 300 }}>
+            <p className="font-sans text-lg sm:text-xl text-mid leading-relaxed mb-8 animate-fade-up stagger-2 max-w-xl font-medium" style={{ fontWeight: 500 }}>
               Eunoia is where burned-out professionals find people who actually understand &mdash; because they have been there.
             </p>
-            <div className="flex flex-col sm:flex-row items-start gap-4 animate-fade-up stagger-3">
+            <div className="flex flex-col sm:flex-row items-start gap-5 animate-fade-up stagger-3 mb-7">
               <Link
                 to="/signup"
                 data-testid="cta-begin-checkin"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-charcoal text-white font-sans font-medium text-base rounded-[18px] hover:-translate-y-[3px] hover:shadow-eunoia-hover transition-all duration-300 no-underline"
-                style={{ height: 52 }}
+                className="inline-flex items-center gap-2 px-9 py-4 bg-charcoal text-white font-sans font-semibold text-base rounded-[20px] hover:-translate-y-[4px] hover:shadow-dramatic transition-all duration-300 no-underline"
+                style={{ height: 56 }}
               >
                 Begin your check-in
                 <ArrowRight size={18} />
@@ -338,14 +338,14 @@ export default function Landing() {
               <a
                 href="#inside"
                 data-testid="cta-how-it-works"
-                className="inline-flex items-center gap-1.5 px-2 py-4 font-sans font-medium text-base no-underline transition-colors"
-                style={{ color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: '4px' }}
+                className="inline-flex items-center gap-2 px-3 py-4 font-sans font-semibold text-base no-underline transition-colors"
+                style={{ color: 'var(--accent)', textDecoration: 'underline', textUnderlineOffset: '5px', textDecorationThickness: '2px' }}
               >
                 See how it works <ArrowDown size={16} />
               </a>
             </div>
-            <p className="mt-5 font-sans text-sm text-mid animate-fade-up stagger-4">
-              Already have an account? <Link to="/signup" data-testid="cta-login" className="font-medium no-underline" style={{ color: 'var(--accent)' }}>Sign in</Link>
+            <p className="mt-6 font-sans text-base text-mid animate-fade-up stagger-4">
+              Already have an account? <Link to="/signup" data-testid="cta-login" className="font-semibold no-underline" style={{ color: 'var(--accent)' }}>Sign in</Link>
             </p>
           </div>
 

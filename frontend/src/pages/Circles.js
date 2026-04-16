@@ -21,24 +21,24 @@ function CircleCard({ circle, onClick }) {
   const activity = getActivityStatus(circle.id);
   
   return (
-    <GlassCard hover onClick={onClick} className="p-6">
-      <IdentityEmblem userId={circle.id} size="md" className="mb-4" />
+    <GlassCard hover onClick={onClick} className="p-7 hover-lift">
+      <IdentityEmblem userId={circle.id} size="md" className="mb-5" />
       
-      <h3 className="text-xl font-serif text-charcoal mb-2">
+      <h3 className="text-2xl font-serif text-charcoal mb-3 font-semibold">
         {circle.name}
       </h3>
       
-      <p className="text-sm text-mid mb-4 leading-relaxed">
+      <p className="text-base text-mid mb-5 leading-relaxed">
         {circle.description}
       </p>
       
       {/* Tags */}
       {circle.tags && circle.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-5">
           {circle.tags.map(tag => (
             <span
               key={tag}
-              className="px-3 py-1 rounded-full text-xs font-medium bg-warm-white/60 text-charcoal border border-charcoal/10"
+              className="px-3 py-1.5 rounded-full text-xs font-semibold bg-warm-white/70 text-charcoal border border-charcoal/15"
             >
               {tag}
             </span>
@@ -47,14 +47,14 @@ function CircleCard({ circle, onClick }) {
       )}
       
       {/* Member Count */}
-      <div className="flex items-center gap-2 text-sm text-mid mb-3">
-        <Users size={14} />
+      <div className="flex items-center gap-2 text-base text-mid mb-4 font-medium">
+        <Users size={16} />
         <span>{circle.member_count || circle.seeded_members_count || 0} members</span>
       </div>
       
       {/* Activity Status */}
-      <div className="flex items-center gap-2 text-sm text-charcoal">
-        <span>{activity.emoji}</span>
+      <div className="flex items-center gap-2 text-base text-charcoal font-medium">
+        <span className="text-lg">{activity.emoji}</span>
         <span className="italic">{activity.text}</span>
       </div>
     </GlassCard>
@@ -96,18 +96,18 @@ export default function Circles() {
   return (
     <div className="min-h-screen pt-20 pb-24 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-12 text-center animate-fade-up">
-          <h1 className="text-4xl sm:text-5xl font-serif text-charcoal mb-4">
+        {/* Header - Bold typography */}
+        <div className="mb-16 text-center animate-fade-up">
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-serif text-charcoal mb-5 font-bold leading-[1.02]">
             Find your cohort.
           </h1>
-          <p className="text-lg text-mid leading-relaxed">
+          <p className="text-xl text-mid leading-relaxed font-medium max-w-2xl mx-auto">
             Anonymous circles for the specific kind of hard you're carrying.
           </p>
         </div>
 
-        {/* Circle Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-up stagger-2">
+        {/* Circle Grid - Staggered reveal */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-7 animate-fade-up stagger-2">
           {circles.map((circle) => (
             <CircleCard
               key={circle.id}
