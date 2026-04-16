@@ -444,10 +444,16 @@ async def get_forum(forum_id: str):
         # Get display names for replies
         for reply in replies:
             reply_user = await db.users.find_one({"id": reply["user_id"]}, {"_id": 0, "display_name": 1})
-            reply["display_name"] = reply_user["display_name"] if reply_user else "Anonymous"
+            if reply_user:
+                reply["display_name"] = reply_user["display_name"]
+            elif not reply.get("display_name"):
+                reply["display_name"] = "Anonymous"
         post["replies"] = replies
         post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "display_name": 1})
-        post["display_name"] = post_user["display_name"] if post_user else "Anonymous"
+        if post_user:
+            post["display_name"] = post_user["display_name"]
+        elif not post.get("display_name"):
+            post["display_name"] = "Anonymous"
     member_count = len(set([p["user_id"] for p in posts]))
     forum["member_count"] = max(member_count, forum.get("seeded_members_count", 0))
     return {"forum": forum, "posts": posts}
@@ -729,7 +735,7 @@ async def get_contributions(request: Request):
         "consents": consent_map
     }
 
-@api_router.post("/data/export")
+@api_router.get("/data/export")
 async def export_data(request: Request):
     user = await get_current_user(request)
     reflections = await db.reflections.find({"user_id": user["id"]}, {"_id": 0}).to_list(1000)
@@ -908,7 +914,7 @@ app.include_router(api_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

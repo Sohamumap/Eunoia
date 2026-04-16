@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import axios from 'axios';
 import { Phone, MessageCircle, X } from 'lucide-react';
+
+const BACKEND = process.env.REACT_APP_BACKEND_URL;
 
 export default function CrisisModal({ onClose, autoLocale }) {
   const { user, api } = useAuth();
   const [helplines, setHelplines] = useState([]);
   const [peerRequested, setPeerRequested] = useState(false);
-  const locale = autoLocale || user?.locale || 'OTHER';
+  const locale = autoLocale || user?.locale || 'IN';
 
   useEffect(() => {
     const fetchHelplines = async () => {
       try {
-        const { data } = await api('get', `/crisis/helplines/${locale}`);
+        const { data } = await axios.get(`${BACKEND}/api/crisis/helplines/${locale}`);
         setHelplines(data.helplines);
       } catch {
         setHelplines([
@@ -20,9 +23,10 @@ export default function CrisisModal({ onClose, autoLocale }) {
       }
     };
     fetchHelplines();
-  }, [api, locale]);
+  }, [locale]);
 
   const logCrisis = async (action) => {
+    if (!api) return;
     try {
       await api('post', '/crisis/log', {
         trigger_text: 'manual_or_detected',

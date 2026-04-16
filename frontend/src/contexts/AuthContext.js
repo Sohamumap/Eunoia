@@ -10,7 +10,7 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem('eunoia_token'));
 
   const axiosConfig = useCallback(() => {
-    const config = { withCredentials: true, headers: {} };
+    const config = { headers: {} };
     const t = token || localStorage.getItem('eunoia_token');
     if (t) config.headers.Authorization = `Bearer ${t}`;
     return config;
@@ -31,14 +31,14 @@ export function AuthProvider({ children }) {
   useEffect(() => { checkAuth(); }, [checkAuth]);
 
   const signup = async (email, locale, role) => {
-    const { data } = await axios.post(`${API}/auth/signup`, { email, locale, role }, { withCredentials: true });
+    const { data } = await axios.post(`${API}/auth/signup`, { email, locale, role });
     if (data.token) { localStorage.setItem('eunoia_token', data.token); setToken(data.token); }
     setUser(data.user);
     return data;
   };
 
   const login = async (email) => {
-    const { data } = await axios.post(`${API}/auth/login`, { email }, { withCredentials: true });
+    const { data } = await axios.post(`${API}/auth/login`, { email });
     if (data.token) { localStorage.setItem('eunoia_token', data.token); setToken(data.token); }
     setUser(data.user);
     return data;
