@@ -33,7 +33,9 @@ export default function CrisisModal({ onClose, autoLocale }) {
         helpline_shown: helplines.map(h => h.name).join(', '),
         action_taken: action,
       });
-    } catch {}
+    } catch (error) {
+      console.error('Failed to log crisis event:', error);
+    }
   };
 
   const handleDial = (helpline) => {

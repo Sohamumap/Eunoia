@@ -14,8 +14,11 @@ export default function MoodCalendar({ days = 91, showStats = true }) {
     try {
       const { data: d } = await api('get', `/mood/calendar?days=${days}`);
       setData(d);
-    } catch {}
-    finally { setLoading(false); }
+    } catch (error) {
+      console.error('Failed to fetch mood calendar:', error);
+    } finally { 
+      setLoading(false); 
+    }
   }, [api, days]);
 
   useEffect(() => { fetchCalendar(); }, [fetchCalendar]);
@@ -36,17 +39,17 @@ export default function MoodCalendar({ days = 91, showStats = true }) {
       <div className="flex items-start gap-3 overflow-x-auto no-scrollbar">
         <div className="flex flex-col gap-1 pt-1 flex-shrink-0">
           {dayLabels.map((l, i) => (
-            <span key={i} className="font-mono text-[10px] text-mid h-4 leading-4 w-3">{l}</span>
+            <span key={`day-label-${l}-${i}`} className="font-mono text-[10px] text-mid h-4 leading-4 w-3">{l}</span>
           ))}
         </div>
         <div className="flex gap-1 flex-1 min-w-0">
-          {cols.map((col, i) => (
-            <div key={i} className="flex flex-col gap-1">
-              {col.map((d, j) => {
+          {cols.map((col, colIdx) => (
+            <div key={`col-${colIdx}`} className="flex flex-col gap-1">
+              {col.map((d, dayIdx) => {
                 const c = d.mood ? MOOD_COLOR[d.mood] : null;
                 return (
                   <div
-                    key={j}
+                    key={d.date || `day-${colIdx}-${dayIdx}`}
                     onMouseEnter={() => setHover(d)}
                     onMouseLeave={() => setHover(null)}
                     data-testid={`cal-cell-${d.date}`}

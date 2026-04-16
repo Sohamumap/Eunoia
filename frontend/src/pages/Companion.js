@@ -24,7 +24,9 @@ export default function Companion() {
       const { data } = await api('get', '/reflections/me');
       setReflections(data.reflections);
       setQualifyingCount(data.qualifying_count);
-    } catch {}
+    } catch (error) {
+      console.error('Failed to fetch reflections:', error);
+    }
   }, [api]);
 
   useEffect(() => { fetchReflections(); }, [fetchReflections]);

@@ -26,7 +26,9 @@ export default function MoodSelector({ onSaved, compact = false }) {
         setSelected(data.entry.mood);
         setNote(data.entry.note || '');
       }
-    } catch {}
+    } catch (error) {
+      console.error('Failed to fetch today mood:', error);
+    }
   }, [api]);
 
   useEffect(() => { fetchToday(); }, [fetchToday]);
@@ -40,8 +42,11 @@ export default function MoodSelector({ onSaved, compact = false }) {
       if (onSaved) onSaved();
       setTimeout(() => setSaved(false), 2000);
       await fetchToday();
-    } catch {}
-    finally { setSaving(false); }
+    } catch (error) {
+      console.error('Failed to save mood:', error);
+    } finally { 
+      setSaving(false); 
+    }
   };
 
   return (

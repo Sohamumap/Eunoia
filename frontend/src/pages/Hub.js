@@ -167,7 +167,9 @@ export default function Hub() {
       try {
         const { data } = await api('get', '/hub/practices');
         setPractices(data.practices);
-      } catch {}
+      } catch (error) {
+        console.error('Failed to fetch practices:', error);
+      }
     };
     fetch();
   }, [api]);

@@ -34,7 +34,7 @@ function ConcentricCircles() {
           { num: '02', title: 'Quantified Reflection', desc: 'Validated clinical scales and free-form journaling. Your burnout, measured by your own words.' },
           { num: '03', title: 'Data Cooperative', desc: 'You own your data. Opt in to share anonymized insights and receive a share of commercial value.' },
         ].map((item, i) => (
-          <div key={i} className={`flex gap-5 items-start ${visible ? 'animate-fade-up' : 'opacity-0'}`} style={{ animationDelay: `${i * 0.15 + 0.3}s` }}>
+          <div key={`principle-${item.num}`} className={`flex gap-5 items-start ${visible ? 'animate-fade-up' : 'opacity-0'}`} style={{ animationDelay: `${i * 0.15 + 0.3}s` }}>
             <span className="font-mono text-sm text-accent font-medium mt-1">{item.num}</span>
             <div>
               <h3 className="font-serif text-xl font-semibold text-charcoal mb-1">{item.title}</h3>
@@ -57,7 +57,7 @@ function ConcentricCircles() {
           ))}
           {rings.map((ring, i) => (
             <circle
-              key={i}
+              key={`ring-${ring.size}-${ring.color}`}
               cx="170" cy="170" r={ring.size / 2}
               fill={i === 2 ? 'rgba(193, 123, 47, 0.10)' : i === 1 ? 'rgba(123, 111, 165, 0.05)' : 'none'}
               stroke={ring.color} strokeWidth={i === 2 ? 2 : 1}
