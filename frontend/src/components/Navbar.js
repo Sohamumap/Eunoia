@@ -51,7 +51,6 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               <Logo to={user ? '/home' : '/'} size="md" data-testid="nav-logo" />
-              <span className="text-accent text-xs font-sans font-medium hidden sm:inline tracking-wide" style={{ marginTop: '2px' }}>beautiful thinking</span>
             </div>
 
             {user && (
