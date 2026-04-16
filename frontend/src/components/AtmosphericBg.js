@@ -1,17 +1,18 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
+// Map routes to atmospheric class and blurry background image
 const routeAtmoMap = {
-  '/': 'atmo-landing',
-  '/home': 'atmo-home',
-  '/circles': 'atmo-circles',
-  '/profile': 'atmo-profile',
-  '/companion': 'atmo-companion',
-  '/hub': 'atmo-hub',
-  '/assessment': 'atmo-assessment',
-  '/settings/data': 'atmo-home',
-  '/onboarding': 'atmo-companion',
-  '/signup': 'atmo-companion',
+  '/': { cls: 'atmo-landing', img: '/assets/bg-glow-figure.jpg' },
+  '/home': { cls: 'atmo-home', img: '/assets/bg-glow-figure.jpg' },
+  '/circles': { cls: 'atmo-circles', img: '/assets/bg-colorful-back.jpg' },
+  '/profile': { cls: 'atmo-profile', img: '/assets/bg-glow-figure.jpg' },
+  '/companion': { cls: 'atmo-companion', img: '/assets/bg-dancer.jpg' },
+  '/hub': { cls: 'atmo-hub', img: '/assets/bg-dancer.jpg' },
+  '/assessment': { cls: 'atmo-assessment', img: null },
+  '/settings/data': { cls: 'atmo-home', img: '/assets/bg-glow-figure.jpg' },
+  '/onboarding': { cls: 'atmo-companion', img: '/assets/bg-dancer.jpg' },
+  '/signup': { cls: 'atmo-companion', img: '/assets/bg-dancer.jpg' },
 };
 
 export default function AtmosphericBg() {
@@ -19,15 +20,19 @@ export default function AtmosphericBg() {
 
   useEffect(() => {
     const path = location.pathname;
-    let className = routeAtmoMap[path];
-    if (!className && path.startsWith('/circles/')) className = routeAtmoMap['/circles'];
-    if (!className) className = routeAtmoMap['/home'];
+    let entry = routeAtmoMap[path];
+    if (!entry && path.startsWith('/circles/')) entry = routeAtmoMap['/circles'];
+    if (!entry) entry = routeAtmoMap['/home'];
 
+    // Set atmospheric class
     document.body.className = document.body.className
       .split(' ')
       .filter(c => !c.startsWith('atmo-') && c !== 'revealing' && c !== 'revealed')
       .join(' ');
-    document.body.classList.add(className);
+    document.body.classList.add(entry.cls);
+    
+    // Set background image (will be heavily blurred via CSS)
+    document.body.style.setProperty('--atmo-img', entry.img ? `url(${entry.img})` : 'none');
 
     return () => {
       document.body.className = document.body.className
