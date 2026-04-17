@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowDown, Heart, Wind, Activity, BookOpen, Shield, Users, Sparkles, Moon } from 'lucide-react';
+import { ArrowRight, ArrowDown, Heart, Wind, Activity, BookOpen, Shield, Users, Sparkles, Moon, ChevronLeft, ChevronRight } from 'lucide-react';
 import Logo from '@/components/Logo';
 
 const testimonials = [
@@ -87,6 +87,132 @@ function ConcentricCircles() {
         ))}
       </div>
     </div>
+  );
+}
+
+/** Feature Showcase Carousel — inspired by provided screenshots */
+function FeatureShowcaseCarousel() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const timerRef = useRef(null);
+
+  const features = [
+    {
+      title: 'Find your cohort',
+      description: 'Anonymous circles for the specific kind of hard you&apos;re carrying.',
+      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/sxc3kxv8_Screenshot%202026-04-17%20060534.png',
+    },
+    {
+      title: 'Wellness Hub',
+      description: 'Evidence-based micro-practices. Two minutes each. No signup required.',
+      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/3kj20p8o_Screenshot%202026-04-17%20060553.png',
+    },
+    {
+      title: 'Your Profile',
+      description: 'Track your progress over time with validated clinical assessments.',
+      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/4pfalbk3_Screenshot%202026-04-17%20060609.png',
+    },
+    {
+      title: 'Weekly Burnout Dashboard',
+      description: 'Understand patterns in your stress, exhaustion, and accomplishment.',
+      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/4io07aay_Screenshot%202026-04-17%20060623.png',
+    },
+  ];
+
+  // Auto-advance every 7 seconds
+  useEffect(() => {
+    if (!isPaused) {
+      timerRef.current = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % features.length);
+      }, 7000);
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isPaused, features.length]);
+
+  const goToSlide = (index) => {
+    setCurrentIndex(index);
+  };
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev - 1 + features.length) % features.length);
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % features.length);
+  };
+
+  return (
+    <section className="py-24 px-6" id="showcase">
+      <div className="max-w-5xl mx-auto">
+        {/* Top pill badge */}
+        <div className="flex justify-center mb-6">
+          <span className="inline-block px-4 py-1.5 rounded-full bg-charcoal text-white font-sans text-[11px] uppercase tracking-[0.14em] font-medium">
+            Inside Eunoia
+          </span>
+        </div>
+
+        {/* Serif headline */}
+        <h2 className="font-serif text-4xl sm:text-5xl text-charcoal text-center mb-12 leading-tight">
+          {features[currentIndex].title}
+        </h2>
+        <p className="font-sans text-base text-mid text-center max-w-2xl mx-auto mb-10">
+          {features[currentIndex].description}
+        </p>
+
+        {/* Carousel container */}
+        <div
+          className="relative"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          {/* Large image preview */}
+          <div className="soft-card overflow-hidden p-0 relative" style={{ minHeight: '500px' }}>
+            <img
+              src={features[currentIndex].image}
+              alt={features[currentIndex].title}
+              className="w-full h-full object-contain"
+              style={{ maxHeight: '600px' }}
+            />
+          </div>
+
+          {/* Left chevron */}
+          <button
+            onClick={goToPrevious}
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center transition-all hover:scale-110 z-10"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft size={24} className="text-charcoal" />
+          </button>
+
+          {/* Right chevron */}
+          <button
+            onClick={goToNext}
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center transition-all hover:scale-110 z-10"
+            aria-label="Next slide"
+          >
+            <ChevronRight size={24} className="text-charcoal" />
+          </button>
+        </div>
+
+        {/* Bottom tab pills */}
+        <div className="flex justify-center gap-2 mt-8">
+          {features.map((_, index) => (
+            <button
+              key={`carousel-tab-${index}`}
+              onClick={() => goToSlide(index)}
+              className={`h-2 rounded-full transition-all ${
+                index === currentIndex
+                  ? 'w-8 bg-charcoal'
+                  : 'w-2 bg-charcoal/20 hover:bg-charcoal/40'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -341,6 +467,9 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Feature Showcase Carousel */}
+      <FeatureShowcaseCarousel />
 
       {/* Inside Eunoia — Mosaic preview */}
       <InsideEunoiaPreview />
