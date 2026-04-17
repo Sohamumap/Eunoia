@@ -306,7 +306,7 @@ export default function Home() {
             <div className="flex items-center justify-between mb-5">
               <div>
                 <p className="font-sans text-[11px] uppercase tracking-[0.12em] text-mid">Last 13 weeks</p>
-                <h3 className="font-serif text-2xl font-semibold text-charcoal">Emotion tracking</h3>
+                <h3 className="font-serif text-2xl font-semibold text-charcoal">Burnout Watch</h3>
                 <p className="font-sans text-sm text-mid mt-1">Each dot is a day. Each color, a mood. Patterns emerge.</p>
               </div>
               <Sparkles size={20} className="text-accent" />

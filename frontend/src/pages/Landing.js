@@ -563,7 +563,7 @@ function Pillars() {
     { icon: BookOpen, title: 'Private reflection', desc: 'A blank page that listens. Tag, search, and return to your own words.', tint: 'cream' },
     { icon: Users, title: 'Peer circles', desc: 'Small anonymous rooms of people in the same profession, same phase.', tint: 'sage' },
     { icon: Activity, title: 'Clinical scales', desc: 'PHQ-9, GAD-7, PSS-10, PSQI, MBI, UCLA-3 — quietly scored, never weaponised.', tint: 'lavender' },
-    { icon: Moon, title: 'Emotion tracking', desc: 'A gentle calendar that shows the patterns your body already knew.', tint: 'sky' },
+    { icon: Moon, title: 'Burnout Watch', desc: 'A gentle calendar that shows the patterns your body already knew.', tint: 'sky' },
     { icon: Shield, title: 'Your data, yours', desc: 'Opt-in cooperative. Export anytime. Delete forever. No dark patterns.', tint: 'rose' },
   ];
   return (
