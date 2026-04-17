@@ -250,7 +250,7 @@ export default function Home() {
                   <div className="p-1.5 rounded-lg bg-accent/20 animate-pulse-subtle">
                     <Flame size={14} className="text-accent" />
                   </div>
-                  <span className="font-sans text-sm text-charcoal">Streak</span>
+                  <span className="font-sans text-sm text-charcoal">Burnout watch</span>
                 </div>
                 <div className="flex items-baseline gap-1">
                   <span className="font-serif text-xl font-semibold text-charcoal">{summary.streak}</span>
