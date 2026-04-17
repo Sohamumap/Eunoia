@@ -177,7 +177,7 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col items-center">
                   <StatRing value={summary.streak * 10} max={100} color="#7FB88F" label={String(summary.streak)} sub="days" />
-                  <span className="font-sans text-[11px] text-mid mt-1">Check-in streak</span>
+                  <span className="font-sans text-[11px] text-mid mt-1">Reflecting Consistency</span>
                 </div>
               </div>
             ) : (
