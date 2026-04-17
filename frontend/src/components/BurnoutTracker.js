@@ -179,7 +179,7 @@ export default function BurnoutTracker() {
             <Tooltip content={<ChartTooltip />} cursor={TOOLTIP_CURSOR} />
 
             <Area
-              type="monotone"
+              type="natural"
               dataKey="score"
               stroke="url(#burnoutStroke)"
               strokeWidth={2.4}
