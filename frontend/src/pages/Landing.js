@@ -159,11 +159,29 @@ function FeatureShowcaseCarousel() {
   };
 
   return (
-    <section className="py-24 px-6" id="showcase">
-      <div className="max-w-5xl mx-auto">
-        {/* Top pill badge */}
+    <section className="py-24 px-6 relative" id="showcase">
+      {/* Subtle background glow */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(circle at center, rgba(127, 184, 143, 0.05), transparent 70%)',
+        }}
+      />
+      
+      <div className="max-w-5xl mx-auto relative z-10">
+        {/* Top pill badge with glassmorphism */}
         <div className="flex justify-center mb-6">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-charcoal text-white font-sans text-[11px] uppercase tracking-[0.14em] font-medium">
+          <span 
+            className="inline-block px-5 py-2 rounded-full font-sans text-[11px] uppercase tracking-[0.14em] font-medium"
+            style={{
+              background: 'rgba(44, 42, 41, 0.85)',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              color: 'white',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+            }}
+          >
             Inside Eunoia
           </span>
         </div>
@@ -182,46 +200,100 @@ function FeatureShowcaseCarousel() {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {/* Large image preview */}
-          <div className="soft-card overflow-hidden p-0 relative" style={{ minHeight: '500px' }}>
-            <img
-              src={features[currentIndex].image}
-              alt={features[currentIndex].title}
-              className="w-full h-full object-contain"
-              style={{ maxHeight: '600px' }}
+          {/* Large image preview with glassmorphism effect */}
+          <div 
+            className="relative overflow-hidden rounded-3xl p-0" 
+            style={{ 
+              minHeight: '500px',
+              background: 'rgba(255, 255, 255, 0.4)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.5)',
+              boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 0 rgba(255, 255, 255, 0.5)',
+            }}
+          >
+            {/* Subtle gradient overlay for depth */}
+            <div 
+              className="absolute inset-0 pointer-events-none" 
+              style={{
+                background: 'radial-gradient(circle at top left, rgba(127, 184, 143, 0.08), transparent 50%), radial-gradient(circle at bottom right, rgba(193, 123, 47, 0.08), transparent 50%)',
+              }}
             />
+            
+            {/* Image container */}
+            <div className="relative p-4">
+              <img
+                src={features[currentIndex].image}
+                alt={features[currentIndex].title}
+                className="w-full h-full object-contain rounded-2xl"
+                style={{ 
+                  maxHeight: '600px',
+                  filter: 'drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08))',
+                }}
+              />
+            </div>
           </div>
 
-          {/* Left chevron */}
+          {/* Left chevron with glassmorphism */}
           <button
             onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center transition-all hover:scale-110 z-10"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center transition-all hover:scale-110 z-10"
+            style={{
+              background: 'rgba(255, 255, 255, 0.5)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.7)',
+            }}
             aria-label="Previous slide"
           >
             <ChevronLeft size={24} className="text-charcoal" />
           </button>
 
-          {/* Right chevron */}
+          {/* Right chevron with glassmorphism */}
           <button
             onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg flex items-center justify-center transition-all hover:scale-110 z-10"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full flex items-center justify-center transition-all hover:scale-110 z-10"
+            style={{
+              background: 'rgba(255, 255, 255, 0.5)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              border: '1px solid rgba(255, 255, 255, 0.6)',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.7)',
+            }}
             aria-label="Next slide"
           >
             <ChevronRight size={24} className="text-charcoal" />
           </button>
         </div>
 
-        {/* Bottom tab pills */}
-        <div className="flex justify-center gap-2 mt-8">
+        {/* Bottom tab pills with glassmorphism */}
+        <div className="flex justify-center gap-3 mt-10">
           {features.map((_, index) => (
             <button
               key={`carousel-tab-${index}`}
               onClick={() => goToSlide(index)}
-              className={`h-2 rounded-full transition-all ${
+              className={`rounded-full transition-all ${
                 index === currentIndex
-                  ? 'w-8 bg-charcoal'
-                  : 'w-2 bg-charcoal/20 hover:bg-charcoal/40'
+                  ? 'h-3 w-10'
+                  : 'h-3 w-3 hover:w-5'
               }`}
+              style={
+                index === currentIndex
+                  ? {
+                      background: 'linear-gradient(135deg, rgba(193, 123, 47, 0.9), rgba(232, 168, 76, 0.9))',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      boxShadow: '0 2px 8px rgba(193, 123, 47, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+                      border: '1px solid rgba(255, 255, 255, 0.3)',
+                    }
+                  : {
+                      background: 'rgba(193, 123, 47, 0.2)',
+                      backdropFilter: 'blur(8px)',
+                      WebkitBackdropFilter: 'blur(8px)',
+                      border: '1px solid rgba(193, 123, 47, 0.15)',
+                    }
+              }
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
