@@ -77,7 +77,7 @@ export default function CrisisModal({ onClose, autoLocale }) {
         <div className="space-y-3 mb-6">
           {helplines.map((h, i) => (
             <button
-              key={i}
+              key={`helpline-${h.name}`}
               onClick={() => handleDial(h)}
               data-testid={`crisis-helpline-${i}`}
               className="w-full flex items-center gap-4 p-4 rounded-lg bg-card-bg border border-eunoia-border hover:border-rose hover:shadow-eunoia transition-all duration-200 text-left"

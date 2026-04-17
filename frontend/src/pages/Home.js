@@ -277,7 +277,7 @@ export default function Home() {
             <div className="space-y-2">
               {(summary.recent_posts || []).slice(0, 3).map((post, i) => (
                 <Link
-                  key={i}
+                  key={post.id || `recent-${post.forum_id}-${i}`}
                   to={`/circles/${post.forum_id}`}
                   className="block p-3 rounded-xl bg-white/60 hover:bg-white/90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 no-underline group"
                   style={{ animationDelay: `${i * 100}ms` }}

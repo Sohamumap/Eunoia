@@ -12,7 +12,7 @@ export default function Skeleton({ rows = 3, className = '' }) {
   return (
     <div className={`space-y-3 ${className}`}>
       {Array.from({ length: rows }).map((_, i) => (
-        <SkeletonLine key={i} width={`${80 + Math.random() * 20}%`} />
+        <SkeletonLine key={`skel-line-${i}`} width={`${80 + Math.random() * 20}%`} />
       ))}
     </div>
   );

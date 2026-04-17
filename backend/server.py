@@ -16,8 +16,8 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime, timezone, timedelta, date
 import jwt as pyjwt
-import secrets
-import random  # Only for non-security-sensitive operations
+import secrets  # cryptographically-secure source for JWT/display-name identifiers
+import random   # only for demo seeding (non-security-sensitive mood/intensity samples)
 
 # MongoDB
 mongo_url = os.environ['MONGO_URL']
@@ -101,7 +101,9 @@ def create_refresh_token(user_id: str) -> str:
 def generate_display_name(role: str) -> str:
     prefix_map = {"resident": "Resident", "physician": "Dr", "student": "Intern", "other": "Member"}
     prefix = prefix_map.get(role, "Member")
-    return f"{prefix}_{random.randint(1000, 9999)}"
+    # Use `secrets` for the numeric suffix — display names are user-visible identifiers
+    # and we don't want them to be predictable.
+    return f"{prefix}_{secrets.randbelow(9000) + 1000}"
 
 async def get_current_user(request: Request) -> dict:
     token = request.cookies.get("access_token")
@@ -1619,10 +1621,14 @@ async def burnout_weekly(request: Request):
 
     # Category
     def _cat(s):
-        if s is None: return "unknown"
-        if s < 30: return "low"
-        if s < 55: return "moderate"
-        if s < 75: return "elevated"
+        if s is None:
+            return "unknown"
+        if s < 30:
+            return "low"
+        if s < 55:
+            return "moderate"
+        if s < 75:
+            return "elevated"
         return "high"
 
     return {

@@ -74,7 +74,7 @@ function ConcentricCircles() {
         </svg>
         {rings.map((ring, i) => (
           <div
-            key={i}
+            key={`ring-${ring.label}`}
             className={`absolute font-mono text-[10px] tracking-widest font-medium ${visible ? 'animate-fade-in' : 'opacity-0'}`}
             style={{
               color: ring.color,
@@ -190,8 +190,8 @@ function InsideEunoiaPreview() {
                 { c: 'sky', t: 'Move' },
                 { c: 'rose', t: 'Rest' },
                 { c: 'lavender', t: 'Write' },
-              ].map((g, i) => (
-                <div key={i} className={`soft-card-tint-${g.c} rounded-xl p-4 aspect-square flex flex-col items-center justify-center`}>
+              ].map((g) => (
+                <div key={`gallery-${g.t}`} className={`soft-card-tint-${g.c} rounded-xl p-4 aspect-square flex flex-col items-center justify-center`}>
                   <div className="w-10 h-10 rounded-full bg-white/50 mb-1" />
                   <span className="font-sans text-[10px] font-medium text-charcoal/70">{g.t}</span>
                 </div>
@@ -204,11 +204,11 @@ function InsideEunoiaPreview() {
             <p className="font-sans text-[11px] uppercase tracking-[0.12em] text-mid mb-3">13 weeks</p>
             <div className="flex gap-1">
               {Array.from({ length: 13 }).map((_, col) => (
-                <div key={col} className="flex flex-col gap-1">
+                <div key={`spark-col-${col}`} className="flex flex-col gap-1">
                   {Array.from({ length: 7 }).map((_, row) => {
                     const palette = ['#C0726A', '#7B6FA5', '#C8A0B5', '#7FB88F', '#E8A84C', 'rgba(232,228,222,0.45)'];
                     const idx = Math.floor(Math.random() * 6);
-                    return <div key={row} className="w-2 h-2 rounded-[2px]" style={{ background: palette[idx] }} />;
+                    return <div key={`spark-${col}-${row}`} className="w-2 h-2 rounded-[2px]" style={{ background: palette[idx] }} />;
                   })}
                 </div>
               ))}
@@ -250,7 +250,7 @@ function Pillars() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {pillars.map((p, i) => (
-            <div key={i} className={`soft-card soft-card-tint-${p.tint} p-7 animate-fade-up stagger-${(i % 6) + 1}`}>
+            <div key={`pillar-${p.title}`} className={`soft-card soft-card-tint-${p.tint} p-7 animate-fade-up stagger-${(i % 6) + 1}`}>
               <div className="w-11 h-11 rounded-xl bg-white/60 flex items-center justify-center mb-4">
                 <p.icon size={18} className="text-charcoal" />
               </div>
@@ -332,8 +332,8 @@ export default function Landing() {
               { n: '100%', l: 'anonymous' },
               { n: '0', l: 'ads, ever' },
               { n: 'Yours', l: 'the data' },
-            ].map((m, i) => (
-              <div key={i}>
+            ].map((m) => (
+              <div key={`trust-${m.l}`}>
                 <p className="font-serif text-3xl font-bold text-charcoal">{m.n}</p>
                 <p className="font-sans text-xs text-mid uppercase tracking-wider mt-1">{m.l}</p>
               </div>
@@ -358,7 +358,7 @@ export default function Landing() {
           <div className="grid md:grid-cols-3 gap-5">
             {testimonials.map((t, i) => (
               <div
-                key={i}
+                key={`testimonial-${t.name}`}
                 className={`soft-card soft-card-tint-${t.tint} p-7 animate-fade-up stagger-${i + 1}`}
                 data-testid={`testimonial-${i}`}
               >

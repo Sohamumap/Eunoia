@@ -27,6 +27,17 @@ const CATEGORY_META = {
   unknown:  { label: '—',        color: '#7F7A6E', band: 'rgba(127,122,110,0.10)' },
 };
 
+// Chart styling constants — hoisted out of render so they don't cause AreaChart to re-diff props every tick.
+const CHART_MARGIN = { top: 10, right: 10, left: 0, bottom: 0 };
+const CHART_TICKS_Y = [0, 25, 50, 75, 100];
+const CHART_DOMAIN_Y = [0, 100];
+const AXIS_TICK_STYLE = { fill: '#7F7A6E', fontSize: 11, fontFamily: 'DM Sans' };
+const AXIS_TICK_STYLE_Y = { fill: '#7F7A6E', fontSize: 10, fontFamily: 'DM Sans' };
+const GRID_STROKE_DASH = '3 4';
+const TOOLTIP_CURSOR = { stroke: '#C0726A', strokeWidth: 1, strokeDasharray: '4 4' };
+const AREA_ACTIVE_DOT = { r: 6, fill: '#C0726A', stroke: '#fff', strokeWidth: 2 };
+const AREA_DOT = { r: 3.5, fill: '#E8A84C', stroke: '#fff', strokeWidth: 1.5 };
+
 function ChartTooltip({ active, payload }) {
   if (!active || !payload || !payload.length) return null;
   const d = payload[0].payload;
@@ -132,7 +143,7 @@ export default function BurnoutTracker() {
       {/* Chart area */}
       <div className="flex-1 -mx-2 relative z-10" style={{ minHeight: 180 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <AreaChart data={chartData} margin={CHART_MARGIN}>
             <defs>
               <linearGradient id="burnoutFill" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#E8A84C" stopOpacity={0.55} />
@@ -149,23 +160,23 @@ export default function BurnoutTracker() {
               </filter>
             </defs>
 
-            <CartesianGrid stroke="rgba(63,58,52,0.06)" strokeDasharray="3 4" vertical={false} />
+            <CartesianGrid stroke="rgba(63,58,52,0.06)" strokeDasharray={GRID_STROKE_DASH} vertical={false} />
             <XAxis
               dataKey="day"
-              tick={{ fill: '#7F7A6E', fontSize: 11, fontFamily: 'DM Sans' }}
+              tick={AXIS_TICK_STYLE}
               axisLine={false}
               tickLine={false}
               dy={4}
             />
             <YAxis
-              domain={[0, 100]}
-              ticks={[0, 25, 50, 75, 100]}
-              tick={{ fill: '#7F7A6E', fontSize: 10, fontFamily: 'DM Sans' }}
+              domain={CHART_DOMAIN_Y}
+              ticks={CHART_TICKS_Y}
+              tick={AXIS_TICK_STYLE_Y}
               axisLine={false}
               tickLine={false}
               width={28}
             />
-            <Tooltip content={<ChartTooltip />} cursor={{ stroke: '#C0726A', strokeWidth: 1, strokeDasharray: '4 4' }} />
+            <Tooltip content={<ChartTooltip />} cursor={TOOLTIP_CURSOR} />
 
             <Area
               type="monotone"
@@ -175,8 +186,8 @@ export default function BurnoutTracker() {
               fill="url(#burnoutFill)"
               filter="url(#softBlur)"
               connectNulls={false}
-              activeDot={{ r: 6, fill: '#C0726A', stroke: '#fff', strokeWidth: 2 }}
-              dot={{ r: 3.5, fill: '#E8A84C', stroke: '#fff', strokeWidth: 1.5 }}
+              activeDot={AREA_ACTIVE_DOT}
+              dot={AREA_DOT}
               isAnimationActive
               animationDuration={900}
             />

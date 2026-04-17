@@ -134,7 +134,7 @@ function GroundingExercise({ practice, onClose }) {
       <p className="font-serif text-xl text-charcoal mb-6 italic">{s.prompt}</p>
       <div className="flex flex-wrap gap-2 mb-6">
         {Array.from({ length: s.count }).map((_, i) => (
-          <div key={i} className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center font-sans text-sm font-medium transition-all ${
+          <div key={`hub-slot-${step}-${i}`} className={`w-12 h-12 rounded-xl border-2 flex items-center justify-center font-sans text-sm font-medium transition-all ${
             i < items.length ? 'border-accent bg-accent/5 text-accent' : 'border-eunoia-border text-mid'
           }`}>
             {i < items.length ? <Check size={16} /> : i + 1}

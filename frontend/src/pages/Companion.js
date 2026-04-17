@@ -37,14 +37,18 @@ export default function Companion() {
   useEffect(() => { fetchReflections(); }, [fetchReflections]);
 
   // Live moderation — debounced so user sees inline warning before saving
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const runLiveMod = useCallback(async (value) => {
     if (value.trim().length < 5) { setLiveMod(null); return; }
     try {
       const { data } = await api('post', '/moderation/check', { text: value });
       setLiveMod(data);
     } catch (err) {
-      // Silent — live hint is best-effort
+      // Best-effort inline hint — log so regressions are visible in dev consoles,
+      // but don't surface a toast to the user (it would fire on every keystroke).
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('[Companion] live moderation check failed:', err?.message || err);
+      }
     }
   }, [api]);
 
