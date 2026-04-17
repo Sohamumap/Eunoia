@@ -83,11 +83,9 @@ export function AuthProvider({ children }) {
     return Promise.reject(new Error(`Unsupported HTTP method: ${method}`));
   }, [axiosConfig]);
 
-  // Memoize context value so consumers don't re-render on every provider render.
-  const value = useMemo(
-    () => ({ user, loading, signup, login, logout, completeOnboarding, api }),
-    [user, loading, signup, login, logout, completeOnboarding, api]
-  );
+  // Context value - functions are already memoized with useCallback
+  // so we can return the object directly without additional useMemo
+  const value = { user, loading, signup, login, logout, completeOnboarding, api };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

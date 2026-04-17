@@ -253,12 +253,40 @@ export default function Assessment() {
         </div>
 
         <div className="text-center mb-8">
-          <span className="font-sans text-xs text-mid">
-            {current + 1} of {total}
-          </span>
-          {/* Section mini progress */}
-          <div className="w-32 h-1 rounded-full bg-eunoia-border mx-auto mt-2 overflow-hidden">
-            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${sectionProgress}%`, backgroundColor: secInfo?.color }} />
+          {/* Encouraging progress visualization */}
+          <div className="max-w-md mx-auto">
+            {/* Progress bar with gradient */}
+            <div className="relative w-full h-3 rounded-full bg-gradient-to-r from-gray-100 to-gray-200 overflow-hidden shadow-inner">
+              <div 
+                className="h-full rounded-full transition-all duration-700 ease-out shadow-lg"
+                style={{ 
+                  width: `${(current / total) * 100}%`,
+                  background: `linear-gradient(90deg, ${secInfo?.color || '#7FB88F'}, ${secInfo?.color || '#7FB88F'}dd)`,
+                  boxShadow: `0 0 12px ${secInfo?.color || '#7FB88F'}80`
+                }}
+              />
+              {/* Milestone markers */}
+              <div className="absolute inset-0 flex justify-between px-1">
+                {[25, 50, 75].map(milestone => (
+                  <div 
+                    key={milestone} 
+                    className={`w-0.5 h-full ${(current / total) * 100 >= milestone ? 'bg-white/40' : 'bg-gray-300/60'}`}
+                  />
+                ))}
+              </div>
+            </div>
+            
+            {/* Encouraging message based on progress */}
+            <p className="font-sans text-xs text-mid mt-3">
+              {(() => {
+                const progress = (current / total) * 100;
+                if (progress < 25) return "🌱 Great start! You're building insight.";
+                if (progress < 50) return "💫 You're doing amazing! Keep going.";
+                if (progress < 75) return "🎯 Over halfway there! You've got this.";
+                if (progress < 95) return "⭐ Almost done! Your reflection is nearly complete.";
+                return "🎉 Final question! You're almost there.";
+              })()}
+            </p>
           </div>
         </div>
 

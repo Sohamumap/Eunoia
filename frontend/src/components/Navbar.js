@@ -14,18 +14,19 @@ export default function Navbar() {
   const [karma, setKarma] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Fetch karma and unread count when user changes
   useEffect(() => {
-    if (user) {
-      // Fetch karma
-      api('get', '/user/me/karma').then(({ data }) => {
-        setKarma(data);
-      }).catch(() => {});
+    if (!user) return;
+    
+    // Fetch karma
+    api('get', '/user/me/karma')
+      .then(({ data }) => setKarma(data))
+      .catch(() => {});
 
-      // Fetch unread message count
-      api('get', '/messages/inbox').then(({ data }) => {
-        setUnreadCount(data.unread_count || 0);
-      }).catch(() => {});
-    }
+    // Fetch unread message count
+    api('get', '/messages/inbox')
+      .then(({ data }) => setUnreadCount(data.unread_count || 0))
+      .catch(() => {});
   }, [user, api]);
 
   const isActive = (path) => location.pathname === path;
@@ -50,7 +51,7 @@ export default function Navbar() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
-              <Logo to={user ? '/home' : '/'} size="md" data-testid="nav-logo" />
+              <Logo to={user ? '/home' : '/'} size="lg" data-testid="nav-logo" />
             </div>
 
             {user && (
