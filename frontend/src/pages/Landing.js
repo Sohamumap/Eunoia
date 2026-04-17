@@ -204,72 +204,73 @@ function ConcentricCircles() {
   );
 }
 
+// Feature slides data - defined outside component to prevent recreation on every render
+const CAROUSEL_FEATURES = [
+  {
+    title: 'Find your cohort',
+    description: "Anonymous circles for the specific kind of hard you're carrying.",
+    image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/sxc3kxv8_Screenshot%202026-04-17%20060534.png',
+  },
+  {
+    title: 'Wellness Hub',
+    description: 'Evidence-based micro-practices. Two minutes each. No signup required.',
+    image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/3kj20p8o_Screenshot%202026-04-17%20060553.png',
+  },
+  {
+    title: 'Your Profile',
+    description: 'Track your progress over time with validated clinical assessments.',
+    image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/4pfalbk3_Screenshot%202026-04-17%20060609.png',
+  },
+  {
+    title: 'Weekly Burnout Dashboard',
+    description: 'Understand patterns in your stress, exhaustion, and accomplishment.',
+    image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/4io07aay_Screenshot%202026-04-17%20060623.png',
+  },
+  {
+    title: 'Private Messages',
+    description: 'Safe, anonymous conversations with peers who understand your journey.',
+    image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/8asisrte_Screenshot%202026-04-17%20060640.png',
+  },
+  {
+    title: 'Community Activity',
+    description: 'Connect with others through shared experiences and peer support.',
+    image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/qpqi7mgw_Screenshot%202026-04-17%20060657.png',
+  },
+  {
+    title: 'Your Dashboard',
+    description: 'Your quiet corner. Track burnout, check in daily, and find your breath.',
+    image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/e4fhh2fe_Screenshot%202026-04-17%20061627.png',
+  },
+];
+
 /** Feature Showcase Carousel — inspired by provided screenshots */
 function FeatureShowcaseCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const timerRef = useRef(null);
 
-  const features = [
-    {
-      title: 'Find your cohort',
-      description: 'Anonymous circles for the specific kind of hard you&apos;re carrying.',
-      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/sxc3kxv8_Screenshot%202026-04-17%20060534.png',
-    },
-    {
-      title: 'Wellness Hub',
-      description: 'Evidence-based micro-practices. Two minutes each. No signup required.',
-      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/3kj20p8o_Screenshot%202026-04-17%20060553.png',
-    },
-    {
-      title: 'Your Profile',
-      description: 'Track your progress over time with validated clinical assessments.',
-      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/4pfalbk3_Screenshot%202026-04-17%20060609.png',
-    },
-    {
-      title: 'Weekly Burnout Dashboard',
-      description: 'Understand patterns in your stress, exhaustion, and accomplishment.',
-      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/4io07aay_Screenshot%202026-04-17%20060623.png',
-    },
-    {
-      title: 'Private Messages',
-      description: 'Safe, anonymous conversations with peers who understand your journey.',
-      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/8asisrte_Screenshot%202026-04-17%20060640.png',
-    },
-    {
-      title: 'Community Activity',
-      description: 'Connect with others through shared experiences and peer support.',
-      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/qpqi7mgw_Screenshot%202026-04-17%20060657.png',
-    },
-    {
-      title: 'Your Dashboard',
-      description: 'Your quiet corner. Track burnout, check in daily, and find your breath.',
-      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/e4fhh2fe_Screenshot%202026-04-17%20061627.png',
-    },
-  ];
-
   // Auto-advance every 7 seconds
   useEffect(() => {
     if (!isPaused) {
       timerRef.current = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % features.length);
+        setCurrentIndex((prev) => (prev + 1) % CAROUSEL_FEATURES.length);
       }, 7000);
     }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isPaused, features.length]);
+  }, [isPaused]);
 
   const goToSlide = (index) => {
     setCurrentIndex(index);
   };
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + features.length) % features.length);
+    setCurrentIndex((prev) => (prev - 1 + CAROUSEL_FEATURES.length) % CAROUSEL_FEATURES.length);
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % features.length);
+    setCurrentIndex((prev) => (prev + 1) % CAROUSEL_FEATURES.length);
   };
 
   return (
@@ -302,10 +303,10 @@ function FeatureShowcaseCarousel() {
 
         {/* Serif headline */}
         <h2 className="font-serif text-4xl sm:text-5xl text-charcoal text-center mb-12 leading-tight">
-          {features[currentIndex].title}
+          {CAROUSEL_FEATURES[currentIndex].title}
         </h2>
         <p className="font-sans text-base text-mid text-center max-w-2xl mx-auto mb-10">
-          {features[currentIndex].description}
+          {CAROUSEL_FEATURES[currentIndex].description}
         </p>
 
         {/* Carousel container */}
@@ -337,8 +338,8 @@ function FeatureShowcaseCarousel() {
             {/* Image container */}
             <div className="relative p-4">
               <img
-                src={features[currentIndex].image}
-                alt={features[currentIndex].title}
+                src={CAROUSEL_FEATURES[currentIndex].image}
+                alt={CAROUSEL_FEATURES[currentIndex].title}
                 className="w-full h-full object-contain rounded-2xl"
                 style={{ 
                   maxHeight: '600px',
@@ -383,7 +384,7 @@ function FeatureShowcaseCarousel() {
 
         {/* Bottom tab pills with glassmorphism */}
         <div className="flex justify-center gap-3 mt-10">
-          {features.map((_, index) => (
+          {CAROUSEL_FEATURES.map((_, index) => (
             <button
               key={`carousel-tab-${index}`}
               onClick={() => goToSlide(index)}
