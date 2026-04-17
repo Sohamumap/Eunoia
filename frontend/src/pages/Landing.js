@@ -22,9 +22,9 @@ function ConcentricCircles() {
   }, []);
 
   const rings = [
-    { label: 'OWN', desc: 'Data Cooperative', color: 'var(--green)', size: 280, delay: '0.4s' },
-    { label: 'REFLECT', desc: 'Quantified Reflection', color: 'var(--lavender)', size: 200, delay: '0.2s' },
-    { label: 'PEER', desc: 'Peer Circles', color: 'var(--accent)', size: 120, delay: '0s' },
+    { label: 'OWN', desc: 'Data Cooperative', color: 'var(--green)', size: 320, delay: '0.4s', glowColor: 'rgba(127, 184, 143, 0.3)' },
+    { label: 'REFLECT', desc: 'Quantified Reflection', color: 'var(--lavender)', size: 240, delay: '0.2s', glowColor: 'rgba(123, 111, 165, 0.25)' },
+    { label: 'PEER', desc: 'Peer Circles', color: 'var(--accent)', size: 150, delay: '0s', glowColor: 'rgba(193, 123, 47, 0.3)' },
   ];
 
   return (
@@ -45,41 +45,107 @@ function ConcentricCircles() {
         ))}
       </div>
 
-      <div className="relative flex-shrink-0" style={{ width: 340, height: 340 }}>
-        <svg viewBox="0 0 340 340" className="w-full h-full">
-          {[0, 60, 120, 180, 240, 300].map(angle => (
+      {/* Glassmorphism Concentric Circles */}
+      <div className="relative flex-shrink-0" style={{ width: 400, height: 400 }}>
+        {/* Large radial glow background - enhanced */}
+        <div 
+          className="absolute"
+          style={{
+            top: '-20%',
+            left: '-20%',
+            width: '140%',
+            height: '140%',
+            background: 'radial-gradient(circle at center, rgba(127, 184, 143, 0.25), rgba(123, 111, 165, 0.15) 35%, rgba(193, 123, 47, 0.08) 55%, transparent 75%)',
+            filter: 'blur(60px)',
+            pointerEvents: 'none',
+          }}
+        />
+        
+        <svg viewBox="0 0 400 400" className="w-full h-full relative z-10">
+          {/* Subtle radial grid lines */}
+          {[0, 45, 90, 135, 180, 225, 270, 315].map(angle => (
             <line
               key={angle}
-              x1="170" y1="170"
-              x2={170 + 160 * Math.cos((angle * Math.PI) / 180)}
-              y2={170 + 160 * Math.sin((angle * Math.PI) / 180)}
-              stroke="var(--border)" strokeWidth="0.5" opacity="0.5"
+              x1="200" y1="200"
+              x2={200 + 180 * Math.cos((angle * Math.PI) / 180)}
+              y2={200 + 180 * Math.sin((angle * Math.PI) / 180)}
+              stroke="rgba(193, 123, 47, 0.1)" strokeWidth="0.5" opacity="0.6"
             />
           ))}
+          
+          {/* Glassmorphism Circles */}
           {rings.map((ring, i) => (
-            <circle
-              key={`ring-${ring.size}-${ring.color}`}
-              cx="170" cy="170" r={ring.size / 2}
-              fill={i === 2 ? 'rgba(193, 123, 47, 0.10)' : i === 1 ? 'rgba(123, 111, 165, 0.05)' : 'none'}
-              stroke={ring.color} strokeWidth={i === 2 ? 2 : 1}
-              style={{
-                transform: visible ? 'scale(1)' : 'scale(0)',
-                transformOrigin: '170px 170px',
-                transition: `transform 0.8s cubic-bezier(0.22, 1, 0.36, 1) ${ring.delay}`,
-                opacity: visible ? 1 : 0,
-              }}
-            />
+            <g key={`ring-glass-${ring.size}-${ring.color}`}>
+              {/* Outer glow */}
+              <circle
+                cx="200" cy="200" r={ring.size / 2}
+                fill="none"
+                stroke={ring.glowColor}
+                strokeWidth={i === 0 ? 35 : i === 1 ? 30 : 25}
+                opacity={visible ? (i === 0 ? 0.5 : i === 1 ? 0.45 : 0.4) : 0}
+                filter="blur(18px)"
+                style={{
+                  transform: visible ? 'scale(1)' : 'scale(0.5)',
+                  transformOrigin: '200px 200px',
+                  transition: `all 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${ring.delay}`,
+                }}
+              />
+              
+              {/* Frosted glass circle */}
+              <circle
+                cx="200" cy="200" r={ring.size / 2}
+                fill={i === 0 ? 'rgba(127, 184, 143, 0.12)' : i === 1 ? 'rgba(123, 111, 165, 0.1)' : 'rgba(193, 123, 47, 0.15)'}
+                stroke={ring.color}
+                strokeWidth={i === 0 ? 2.5 : 2}
+                style={{
+                  transform: visible ? 'scale(1)' : 'scale(0.5)',
+                  transformOrigin: '200px 200px',
+                  transition: `transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${ring.delay}, opacity 0.6s ease ${ring.delay}`,
+                  opacity: visible ? 0.95 : 0,
+                  filter: 'drop-shadow(0 4px 16px rgba(0, 0, 0, 0.1))',
+                }}
+              />
+              
+              {/* Inner highlight for glass effect */}
+              <circle
+                cx="200" cy="200" r={ring.size / 2 - 2}
+                fill="none"
+                stroke="rgba(255, 255, 255, 0.5)"
+                strokeWidth="1.5"
+                opacity={visible ? 0.6 : 0}
+                style={{
+                  transform: visible ? 'scale(1)' : 'scale(0.5)',
+                  transformOrigin: '200px 200px',
+                  transition: `all 0.9s cubic-bezier(0.22, 1, 0.36, 1) ${ring.delay}`,
+                }}
+              />
+            </g>
           ))}
-          <circle cx="170" cy="170" r="7" fill="var(--accent)" style={{ filter: 'drop-shadow(0 0 10px rgba(193,123,47,0.6))' }} />
+          
+          {/* Center dot with enhanced glow */}
+          <circle 
+            cx="200" cy="200" r="9" 
+            fill="var(--accent)"
+            style={{ 
+              filter: 'drop-shadow(0 0 15px rgba(193, 123, 47, 0.8)) drop-shadow(0 0 30px rgba(193, 123, 47, 0.5))',
+              opacity: visible ? 1 : 0,
+              transition: 'opacity 0.6s ease 0.6s',
+            }} 
+          />
         </svg>
+        
+        {/* Labels with enhanced glassmorphism */}
         {rings.map((ring, i) => (
           <div
-            key={`ring-${ring.label}`}
-            className={`absolute font-mono text-[10px] tracking-widest font-medium ${visible ? 'animate-fade-in' : 'opacity-0'}`}
+            key={`ring-label-${ring.label}`}
+            className={`absolute font-mono text-[11px] tracking-widest font-bold ${visible ? 'animate-fade-in' : 'opacity-0'}`}
             style={{
               color: ring.color,
-              top: 170 - ring.size / 2 - 14, left: '50%', transform: 'translateX(-50%)',
-              animationDelay: `${parseFloat(ring.delay) + 0.5}s`
+              top: 200 - ring.size / 2 - 20, 
+              left: '50%', 
+              transform: 'translateX(-50%)',
+              animationDelay: `${parseFloat(ring.delay) + 0.6}s`,
+              textShadow: `0 0 12px ${ring.glowColor}, 0 0 24px ${ring.glowColor}, 0 2px 4px rgba(0, 0, 0, 0.1)`,
             }}
           >
             {ring.label}
