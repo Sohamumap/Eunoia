@@ -117,6 +117,21 @@ function FeatureShowcaseCarousel() {
       description: 'Understand patterns in your stress, exhaustion, and accomplishment.',
       image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/4io07aay_Screenshot%202026-04-17%20060623.png',
     },
+    {
+      title: 'Private Messages',
+      description: 'Safe, anonymous conversations with peers who understand your journey.',
+      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/8asisrte_Screenshot%202026-04-17%20060640.png',
+    },
+    {
+      title: 'Community Activity',
+      description: 'Connect with others through shared experiences and peer support.',
+      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/qpqi7mgw_Screenshot%202026-04-17%20060657.png',
+    },
+    {
+      title: 'Your Dashboard',
+      description: 'Your quiet corner. Track burnout, check in daily, and find your breath.',
+      image: 'https://customer-assets.emergentagent.com/job_proto-feature-fix/artifacts/e4fhh2fe_Screenshot%202026-04-17%20061627.png',
+    },
   ];
 
   // Auto-advance every 7 seconds
@@ -470,9 +485,6 @@ export default function Landing() {
 
       {/* Feature Showcase Carousel */}
       <FeatureShowcaseCarousel />
-
-      {/* Inside Eunoia — Mosaic preview */}
-      <InsideEunoiaPreview />
 
       {/* Pillars */}
       <Pillars />
