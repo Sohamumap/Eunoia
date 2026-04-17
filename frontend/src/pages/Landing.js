@@ -46,19 +46,13 @@ function HeroHeadline() {
         {supportText}
         {!supportComplete && <span className="inline-block w-1 h-20 bg-accent ml-1 animate-pulse" style={{ verticalAlign: 'middle' }} />}
       </span>
-      {supportComplete && (
-        <>
-          , not<br />
-          <em className="font-normal italic gradient-text-warm">labels.</em><br />
-        </>
-      )}
-      {supportComplete && (
-        <span className="inline-block">
-          {clarityText}
-          {!clarityComplete && <span className="inline-block w-1 h-20 bg-accent ml-1 animate-pulse" style={{ verticalAlign: 'middle' }} />}
-        </span>
-      )}
-      {clarityComplete && ', not judgment.'}
+      , not<br />
+      <em className="font-normal italic gradient-text-warm">labels.</em><br />
+      <span className="inline-block">
+        {clarityText}
+        {!clarityComplete && <span className="inline-block w-1 h-20 bg-accent ml-1 animate-pulse" style={{ verticalAlign: 'middle' }} />}
+      </span>
+      , not judgment.
     </h1>
   );
 }
