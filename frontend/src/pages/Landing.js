@@ -9,6 +9,60 @@ const testimonials = [
   { text: "I needed a place that would not diagnose me, would not sell me anything, and would not pretend to be my therapist. I just needed to know I was not the only one.", name: "Dr_1847", role: "Emergency Medicine PGY-3", tint: "lavender" }
 ];
 
+/** Typewriter effect hook */
+function useTypewriter(text, speed = 100) {
+  const [displayText, setDisplayText] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+
+  useEffect(() => {
+    let currentIndex = 0;
+    setDisplayText('');
+    setIsComplete(false);
+
+    const timer = setInterval(() => {
+      if (currentIndex <= text.length) {
+        setDisplayText(text.slice(0, currentIndex));
+        currentIndex++;
+      } else {
+        setIsComplete(true);
+        clearInterval(timer);
+      }
+    }, speed);
+
+    return () => clearInterval(timer);
+  }, [text, speed]);
+
+  return { displayText, isComplete };
+}
+
+/** Hero Headline with Typewriter Effect */
+function HeroHeadline() {
+  const { displayText: supportText, isComplete: supportComplete } = useTypewriter('Support', 120);
+  const { displayText: clarityText, isComplete: clarityComplete } = useTypewriter('Clarity', 120);
+
+  return (
+    <h1 className="font-serif text-6xl sm:text-7xl lg:text-8xl font-bold text-charcoal mb-7 animate-fade-up stagger-1 leading-[1.0]">
+      <span className="inline-block">
+        {supportText}
+        {!supportComplete && <span className="inline-block w-1 h-20 bg-accent ml-1 animate-pulse" style={{ verticalAlign: 'middle' }} />}
+      </span>
+      {supportComplete && (
+        <>
+          , not<br />
+          <em className="font-normal italic gradient-text-warm">labels.</em><br />
+        </>
+      )}
+      {supportComplete && (
+        <span className="inline-block">
+          {clarityText}
+          {!clarityComplete && <span className="inline-block w-1 h-20 bg-accent ml-1 animate-pulse" style={{ verticalAlign: 'middle' }} />}
+        </span>
+      )}
+      {clarityComplete && ', not judgment.'}
+    </h1>
+  );
+}
+
 function ConcentricCircles() {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -572,11 +626,7 @@ export default function Landing() {
             <p className="font-sans text-[10px] tracking-[0.20em] uppercase text-mid mb-7 animate-fade-up font-bold" data-testid="hero-overline">
               MENTAL HEALTH QUANTIFIED
             </p>
-            <h1 className="font-serif text-6xl sm:text-7xl lg:text-8xl font-bold text-charcoal mb-7 animate-fade-up stagger-1 leading-[1.0]">
-              Support, not<br />
-              <em className="font-normal italic gradient-text-warm">labels.</em><br />
-              Clarity, not judgment.
-            </h1>
+            <HeroHeadline />
             <p className="font-sans text-lg sm:text-xl text-mid leading-relaxed mb-8 animate-fade-up stagger-2 max-w-xl font-medium" style={{ fontWeight: 500 }}>
               Eunoia is where burned-out professionals find people who actually understand &mdash; because they have been there.
             </p>
