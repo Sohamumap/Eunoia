@@ -59,6 +59,9 @@ export default function Assessment() {
         } else {
           setCurrent(prev => prev + 1);
         }
+      } else {
+        // Last question - show completion screen
+        setPhase('section_done');
       }
     }, 250);
   };
