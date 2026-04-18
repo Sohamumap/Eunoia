@@ -32,6 +32,7 @@ function BreathingExercise({ practice, onClose }) {
       setRunning(false);
       setPhase('done');
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, timer, stepIdx, cycle, steps, totalCycles]);
 
   const start = () => { setRunning(true); setPhase('running'); setTimer(0); setStepIdx(0); setCycle(0); };

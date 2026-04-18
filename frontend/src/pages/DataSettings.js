@@ -136,7 +136,7 @@ export default function DataSettings() {
             <h3 className="font-serif text-lg font-semibold text-charcoal mb-4">Contribution History</h3>
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {contributions.history.map((item, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-eunoia-border last:border-0">
+                <div key={`${item.type}-${item.timestamp || i}`} className="flex items-center justify-between py-2 border-b border-eunoia-border last:border-0">
                   <div className="flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${item.type === 'reflection' ? 'bg-accent/10' : 'bg-eunoia-blue/10'}`}>
                       {item.type === 'reflection' ? <BookOpen size={14} className="text-accent" /> : <BarChart3 size={14} className="text-eunoia-blue" />}
