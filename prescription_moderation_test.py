@@ -10,7 +10,7 @@ import sys
 from datetime import datetime, timezone
 
 # Configuration
-BASE_URL = "https://proto-feature-fix.preview.emergentagent.com/api"
+BASE_URL = "https://app-preview-mobile-19.preview.emergentagent.com/api"
 DEMO_EMAIL = "demo@eunoia.app"
 
 class PrescriptionModerationTester:
